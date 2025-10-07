@@ -1,11 +1,9 @@
-{% extends "app/base.html" %} {% block content %}
-
-<div class="card top d-flex flex-column justify-content-end mb-4">
-  <img src="{{ profile_data.topimage.url }}" alt="" />
-  <div class="overlay text-white p-5">
-    <h1 class="title">{{ profile_data.title }}</h1>
-    <h5 class="subtitle">{{ profile_data.subtitle }}</h5>
+{% extends "app/base.html" %} 
+{% block content %}
+<div class="card border-0 shadow-none text-center">
+    <div class="p-4 bg-white text-dark">
+      <h2 class="title">作品No.1 フィットネスログ</h2>
+      <img src="{{ profile_data.topimage.url }}" alt="" />
+    </div>
   </div>
-</div>
-
 {% endblock %}
