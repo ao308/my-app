@@ -1,9 +1,10 @@
 {% extends "app/base.html" %} 
+{% load static %}
 {% block content %}
 <div class="card border-0 shadow-none text-center">
     <div class="p-4 bg-white text-dark">
       <h2 class="title">作品No.1 フィットネスログ</h2>
-      <img src="{{ profile_data.topimage.url }}" alt="" />
+      <img src="{% static 'img/portfolio.JPG' %}" alt="フィットネスログ画像" class="img-fluid" />
     </div>
   </div>
 {% endblock %}
