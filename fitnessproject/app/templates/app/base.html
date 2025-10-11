@@ -38,8 +38,9 @@
         <a href="{% static 'svg/ER図.drawio.svg' %}" target="_blank"> ER図</a>
 
         <div class="mt-4">
-          <button type="button" class="btn btn-primary">フィットネスログアプリへ</button>
-        </div>  
+          <a href="{% url 'app:login' %}" class="btn btn-primary w-30">フィットネスログアプリへ</a>
+         </div>
+        
     </div>
     {% block extra_js %} {% endblock %}
   </body>
