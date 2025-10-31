@@ -13,10 +13,10 @@
  <div class="container py-5" style="max-width: 360px;">
    <h2 class="mb-4 text-center">フィットネスログ</h2>
 
-  {% if messages %}
+  {% if form.non_field_errors %}
  <div class="alert alert-danger text-center">
- {% for message in messages %}
- <p>{{ message.message }}</p>
+ {% for error in form.non_field_errors %}
+ <p>{{ error }}</p>
  {% endfor %}
  </div>
  {% endif %}
@@ -27,11 +27,27 @@
  <div class="mb-3">
  <label for="username" class="form-label">メールアドレス</label>
  <input type="text" class="form-control" id="email" name="email" required>
+{% if form.email.errors %}
+    <div class="text-danger small">
+      {% for error in form.email.errors %}
+        {{ error }}
+      {% endfor %}
+    </div>
+  {% endif %}
  </div>
+
  <div class="mb-3">
  <label for="password" class="form-label">パスワード</label>
  <input type="password" class="form-control" id="password" name="password" required>
+ {% if form.password.errors %}
+    <div class="text-danger small">
+      {% for error in form.password.errors %}
+        {{ error }}
+      {% endfor %}
+    </div>
+  {% endif %}
  </div>
+
  <button type="submit" class="btn btn-primary w-25 mx-auto d-block mt-4">ログイン</button>
  </form>
 

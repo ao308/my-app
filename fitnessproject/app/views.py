@@ -25,12 +25,8 @@ class UserLoginView(FormView):
     form_class = UserLoginForm
     success_url = reverse_lazy('app:home')
 
-    def form_valid(self, form):
-        email = form.cleaned_data['email']
-        password = form.cleaned_data['password']
-        user = authenticate(request=self.request, email=email, password=password)
-        if user:
-            login(self.request, user)
+    def form_valid(self, form):   
+        login(self.request, form.user)
         return super(). form_valid(form)
     
     def get_success_url(self):
