@@ -1,12 +1,14 @@
 from django.urls import path
-from . import views
+from . views import(
+    IndexView, RegistUserView, HomeView, UserLoginView, UserLogoutView
+)
 
 app_name = 'app'
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('regist', views.regist, name='regist'),
-    path('login' , views.user_login, name='user_login'),
-    path('logout' , views.user_login, name='user_logout'),
-    path('home', views.home_view, name='home')
+    path('', IndexView.as_view(), name='index'),
+    path('regist', RegistUserView.as_view(), name='regist'),
+    path('login' , UserLoginView.as_view(), name='user_login'),
+    path('logout' , UserLogoutView.as_view(), name='user_logout'),
+    path('home', HomeView.as_view(), name='home'),
 ]

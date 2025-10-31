@@ -21,8 +21,8 @@
  </div>
  {% endif %}
 
- <form method="post" action="{% url 'app:user_login' %}">
- {% csrf_token %}
+ <form method="post" action="{% url 'app:user_login' %}?next={{ request.GET.next }}">
+  {% csrf_token %}
  
  <div class="mb-3">
  <label for="username" class="form-label">メールアドレス</label>
