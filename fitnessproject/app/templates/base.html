@@ -6,13 +6,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
   <title>{% block title %}フィットネスログ{% endblock %}</title>
+
+  <style>
+    .content-box {
+      position: relative;
+      max-width: 500px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .box-header {
+      background-color: #ffbf50;
+      padding: 1rem 1.5rem;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    .logout-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .nav-link {
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      color: #000;
+    }
+
+    @media (max-width: 576px) {
+      .content-box {
+        margin: 20px auto;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
 </head>
+
 <body class="bg-light">
   <main>
-    <div class="container py-5" style="max-width: 500px;">
-      {% block content %}{% endblock %}
+    <div class="content-box">
+      {% block header %}
+      <div class="box-header {% block header_class %}orange-bg{% endblock %}">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-bold" style="font-size: 1.4rem;">フィットネスログ</div>
+          {% if user.is_authenticated %}
+          <div class="logout-button">
+            <a href="{% url 'app:user_logout' %}" class="btn btn-outline-light btn-sm">ログアウト</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-2">
+          <a href="{% url 'app:objective' %}" class="nav-link">目標一覧</a>
+          <a href="{% url 'app:favorite' %}" class="nav-link">お気に入り</a>
+          <a href="{% url 'app:mypage' %}" class="nav-link">マイページ</a>
+        </div>
+      </div>
+      {% endblock %}
+
+      <div class="p-4">
+        {% block content %}{% endblock %}
+      </div>
     </div>
   </main>
+
   {% block extra_js %}{% endblock %}
 </body>
 </html>

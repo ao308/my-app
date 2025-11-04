@@ -39,12 +39,14 @@ class UserLogoutView(View):
         logout(request)
         return redirect('app:user_login')
     
-class UserView(LoginRequiredMixin, TemplateView):
-    template_name = 'user.html'
+class ObjectiveView(LoginRequiredMixin, TemplateView):
+    template_name = 'app/objective.html'
+    login_url = 'app:user_login'
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
+class FavoriteView(LoginRequiredMixin, TemplateView):
+    template_name = 'app/favorite.html'
+    login_url = 'app:user_login'
 
-
-    
+class MypageView(LoginRequiredMixin, TemplateView):
+    template_name = 'app/mypage.html'
+    login_url = 'app:user_login'
