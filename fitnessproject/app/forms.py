@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
+from .models import Goal
 
 User = get_user_model()
 
@@ -67,6 +68,17 @@ class UserLoginForm(forms.Form):
 
         self.user = user
         return cleaned_data
+    
+
+class GoalForm(forms.ModelForm):
+    class Meta:
+        model = Goal
+        exclude = ['user'] 
+        fields = ['title', 'description', 'due_date', 'no_deadline', 'show_on_home']
+        widgets = {
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+
 
     
 

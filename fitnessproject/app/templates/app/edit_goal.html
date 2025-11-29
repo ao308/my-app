@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load form_tags %}
+
+{% block content %}
+
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    {{ form.title.label_tag }}  
+    {{ form.title|add_class:"form-control" }}
+  </div>
+
+<div class="mb-3">
+  {{ form.description.label_tag }}
+  {{ form.description|add_class:"form-control" }}
+</div>
+
+<div class="mb-3 form-check">
+  {{ form.show_on_home|add_class:"form-check-input" }}
+  <label for="{{ form.show_on_home.id_for_label }}" class="form-check-label">
+    {{ form.show_on_home.label }}
+  </label>
+</div>
+
+<div class="mb-3">
+  <label>期限</label>
+  {{ form.due_date|add_class:"form-control" }}
+  <div class="form-check mt-2">
+    {{ form.no_deadline|add_class:"form-check-input" }}
+    <label for="{{ form.no_deadline.id_for_label }}" class="form-check-label">
+      {{ form.no_deadline.label }}
+    </label>
+  </div>
+</div>
+
+ <div class="d-flex justify-content-center gap-2 mt-4">
+  <button type="submit" class="btn btn-primary">完了</button>
+  <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+    削除
+  </button>
+  </div>
+
+  <div class="text-center mt-3">
+    <a href="{% url 'app:objective' %}" class="text-decoration-underline text-muted">キャンセル</a>
+  </div>
+</form>
+
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+        この目標を削除しますか？
+      </div>
+      <div class="modal-footer d-flex justify-content-center gap-3">
+  <button type="button" class="btn btn-secondary px-4" style="min-width: 120px;" data-bs-dismiss="modal">キャンセル</button>
+  <a href="{% url 'app:delete_goal' goal.id %}" class="btn btn-danger px-4" style="min-width: 120px;">OK</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const noDeadline = document.getElementById("id_no_deadline");
+  const dueDate = document.getElementById("id_due_date");
+
+  function toggleDueDate() {
+    dueDate.disabled = noDeadline.checked;
+  }
+
+  noDeadline.addEventListener("change", toggleDueDate);
+  window.addEventListener("DOMContentLoaded", toggleDueDate);
+</script>
+
+{% endblock %}

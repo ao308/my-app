@@ -1,10 +1,39 @@
 {% extends 'base.html' %}
-
-{% block header_class %}
-no-bg
-{% endblock %}
-
+{% load static %}
 {% block content %}
-<h1>ようこそ！</h1>
-<p>ここからフィットネスを始めましょう。</p>
+
+<ul class="list-group">
+  {% for goal in goals %}
+    <li class="list-group-item bg-success-subtle">
+      <span class="goal-font">目標：{{ goal.title }}</span></li>
+  {% empty %}
+    <li class="list-group-item">目標が登録されていません。</li>
+  {% endfor %}
+</ul>
+
+<ul class="list-group">
+  {% for exercise in exercises %}
+    <li class="list-group-item bg-success-subtle">目標：{{ exercise.title }}</li>
+  {% empty %}
+    <li class="list-group-item">運動予定はありません。</li>
+  {% endfor %}
+</ul>
+
+<div id="calendar" class="mt-5 mb-4"></div>
 {% endblock %}
+
+{% block extra_js %}
+  <script>
+    window.exerciseEvents = [
+      {% for exercise in exercises %}
+        {
+          title: "🏃 {{ exercise.title }}",
+          start: "{{ exercise.scheduled_date|date:'Y-m-d' }}",
+          color: "{{ exercise.is_done|yesno:'#198754,#ffc107' }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+  </script>
+  <script src="{% static 'js/calendar.js' %}"></script>
+{% endblock %}
+

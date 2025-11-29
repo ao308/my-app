@@ -37,3 +37,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = 'user'
 
+class Goal(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField("目標", max_length=100)
+    description = models.TextField("詳細", blank=True)
+    due_date = models.DateField("期限", null=True, blank=True)
+    no_deadline = models.BooleanField("無期限", default=False)
+    show_on_home = models.BooleanField("ホームに表示", default=False)
+    is_completed = models.BooleanField(default=False) 
+    
+    def __str__(self):
+        return self.title

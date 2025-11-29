@@ -1,8 +1,37 @@
 {% extends 'base.html' %}
-
-{% block title %}目標一覧{% endblock %}
-
 {% block content %}
-  <h2 class="text-center mb-4">目標一覧</h2>
-  <p>ここに目標の一覧を表示します。</p>
+<h2>目標一覧</h2>
+<ul class="list-group">
+  {% for goal in goals %}
+    <li class="list-group-item {% if goal.is_completed %}text-muted text-decoration-line-through{% endif %}">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <a href="{% url 'app:edit_goal' goal.id %}" class="text-decoration-none text-dark">
+            <strong>{{ goal.title }}</strong><br>
+            <small class="text-muted">
+              {% if goal.no_deadline %}
+                無期限
+              {% else %}
+                {{ goal.due_date|date:"Y年m月d日" }}
+              {% endif %}
+            </small>
+          </a>
+        </div>
+      </div>
+    </li>
+  {% empty %}
+    <li class="list-group-item">目標がありません。</li>
+  {% endfor %}
+</ul>
+
+<div class="text-center mt-4">
+  <a href="{% url 'app:create_goal' %}" class="btn btn-success px-4">
+    新規登録
+  </a>
+</div>
+
+<div class="text-center mt-3">
+  <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">ホームへ戻る</a>
+</div>
+
 {% endblock %}

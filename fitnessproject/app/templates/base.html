@@ -5,6 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <title>{% block title %}フィットネスログ{% endblock %}</title>
 
   <style>
@@ -15,7 +17,7 @@
       background-color: #ffffff;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
+      overflow: visible;
     }
 
     .box-header {
@@ -48,7 +50,114 @@
         box-shadow: none;
       }
     }
-  </style>
+
+  .goal-font {
+    font-family: 'Noto Sans JP', '游ゴシック', 'メイリオ', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+#calendar {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  
+}
+
+.fc-col-header-cell {
+  padding: 1px 0;
+}
+
+.fc .fc-col-header-cell-cushion {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-decoration: none !important;
+}
+
+.fc-daygrid-day-frame {
+  min-height: 42px;
+  height: 42px;
+  overflow: hidden;
+}
+
+.fc-daygrid-day-number {
+  font-size: 0.95rem;    
+  font-weight: bold;
+  line-height: 1.2;
+  padding: 2px;
+  text-decoration: none !important;
+}
+
+/* 日曜を赤文字 */
+.fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion {
+  color: red !important;
+}
+
+/* 土曜を青文字 */
+.fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion {
+  color: blue !important;
+}
+
+/* 平日（月〜金）は黒文字 */
+.fc .fc-col-header-cell.fc-day-mon .fc-col-header-cell-cushion,
+.fc .fc-col-header-cell.fc-day-tue .fc-col-header-cell-cushion,
+.fc .fc-col-header-cell.fc-day-wed .fc-col-header-cell-cushion,
+.fc .fc-col-header-cell.fc-day-thu .fc-col-header-cell-cushion,
+.fc .fc-col-header-cell.fc-day-fri .fc-col-header-cell-cushion {
+  color: black !important;
+}
+
+/* 日付セル（日曜赤・土曜青・平日黒） */
+.fc .fc-day-sun .fc-daygrid-day-number {
+  color: red !important;
+}
+
+.fc .fc-day-sat .fc-daygrid-day-number {
+  color: blue !important;
+}
+
+.fc .fc-day-mon .fc-daygrid-day-number,
+.fc .fc-day-tue .fc-daygrid-day-number,
+.fc .fc-day-wed .fc-daygrid-day-number,
+.fc .fc-day-thu .fc-daygrid-day-number,
+.fc .fc-day-fri .fc-daygrid-day-number {
+  color: black !important;
+}
+
+.fc-day-today {
+  background-color: #fff9c4 !important;  /* パステル調の薄い黄色 */
+  border: 2px solid #fbc02d !important;  /* 少し濃いめの枠線で強調 */
+}
+
+
+@media (max-width: 576px) {
+  .fc .fc-toolbar-title {
+    font-size: 0.9rem;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+  }
+
+  .fc-col-header-cell {
+    padding: 3px 0;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 45px;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 0.7rem;
+  }
+}
+
+</style>
 </head>
 
 <body class="bg-light">
@@ -80,5 +189,6 @@
   </main>
 
   {% block extra_js %}{% endblock %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
