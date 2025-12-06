@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     headerToolbar: {
       left: 'prev',
       center: 'title',
-      right: 'next'                // 右は空
+      right: 'next'
     },
     dayCellContent: function(arg) {
       if (arg.isOther) {
@@ -24,13 +24,21 @@ document.addEventListener('DOMContentLoaded', function () {
       return arg.date.getDate();
     },
     events: window.exerciseEvents || [],
-  
+
+    // ✅ 修正済み：/exercise/new に飛ぶように変更
     dateClick: function(info) {
-      const clickedDate = info.dateStr; // 例: "2025-11-29"
-      // 入力画面に遷移（GETパラメータで日付を渡す）
-      window.location.href = `/event/new?date=${clickedDate}`;
+      const clickedDate = info.dateStr;
+      window.location.href = `/exercise/new/?date=${clickedDate}`;
     }
   });
 
   calendar.render();
+
+  // 曜日クリック → 運動予定画面へ
+  document.querySelectorAll('.fc-col-header-cell').forEach(cell => {
+    cell.addEventListener('click', function() {
+      const weekdayText = cell.innerText.trim();
+      window.location.href = `/exercise/schedule/?weekday=${weekdayText}`;
+    });
+  });
 });

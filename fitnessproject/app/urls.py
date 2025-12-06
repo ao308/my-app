@@ -18,6 +18,7 @@ urlpatterns = [
     path('goal/<int:goal_id>/delete/', views.delete_goal, name='delete_goal'),
     path('goal/<int:goal_id>/complete/', views.complete_goal, name='complete_goal'),
     path('goals/create/', views.create_goal, name='create_goal'),
+    path("exercise/new/", views.exercise_new, name="exercise_new"),
     path('favorite', FavoriteView.as_view(), name='favorite'),
     path('mypage', MypageView.as_view(), name='mypage'),
 ]

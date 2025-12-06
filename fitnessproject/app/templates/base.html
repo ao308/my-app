@@ -130,8 +130,8 @@
 }
 
 .fc-day-today {
-  background-color: #fff9c4 !important;  /* パステル調の薄い黄色 */
-  border: 2px solid #fbc02d !important;  /* 少し濃いめの枠線で強調 */
+  background-color: #ffecb3 !important;  /* パステル調の薄い黄色 */
+  border: 2px solid #ffe082 !important;  /* 少し濃いめの枠線で強調 */
 }
 
 
@@ -166,7 +166,9 @@
       {% block header %}
       <div class="box-header {% block header_class %}orange-bg{% endblock %}">
         <div class="d-flex justify-content-between align-items-center">
-          <div class="fw-bold" style="font-size: 1.4rem;">フィットネスログ</div>
+          <div class="fw-bold" style="font-size: 1.4rem;">
+            <a href="{% url 'app:home' %}" class="text-decoration-none text-dark">フィットネスログ</a>
+          </div>
           {% if user.is_authenticated %}
           <div class="logout-button">
             <a href="{% url 'app:user_logout' %}" class="btn btn-outline-light btn-sm">ログアウト</a>

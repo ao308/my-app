@@ -4,7 +4,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
-from .models import Goal
+from .models import Goal, ExerciseSchedule
+from datetime import time
+
 
 User = get_user_model()
 
@@ -69,18 +71,55 @@ class UserLoginForm(forms.Form):
         self.user = user
         return cleaned_data
     
-
 class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
-        exclude = ['user'] 
+        exclude = ['user']
         fields = ['title', 'description', 'due_date', 'no_deadline', 'show_on_home']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        due_date = cleaned_data.get("due_date")
+        no_deadline = cleaned_data.get("no_deadline")
 
-    
+        if (due_date and no_deadline) or (not due_date and not no_deadline):
+            self.add_error("due_date", "期限を入力するか、無期限にチェックを入れてください（両方は不可）")
 
+        return cleaned_data
 
-    
+TIME_CHOICES = [
+    (time(hour % 24, minute), f"{hour % 24:02d}:{minute:02d}")
+    for hour in range(0, 25)   # 0〜24時まで
+    for minute in (0, 30)      # 0分と30分
+]
+
+class ExerciseScheduleForm(forms.ModelForm):
+    date = forms.DateField(
+        label="日付",
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
+    )
+    start_time = forms.TimeField(
+        label="開始時間",
+        widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"})
+    )
+    end_time = forms.TimeField(
+        label="終了時間",
+        widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"})
+    )
+
+    class Meta:
+        model = ExerciseSchedule
+        fields = ["exercise", "memo", "date", "start_time", "end_time"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get("start_time")
+        end = cleaned_data.get("end_time")
+
+        if start and end and end <= start:
+            self.add_error("end_time", "終了時間は開始時間より後にしてください")
+
+        return cleaned_data

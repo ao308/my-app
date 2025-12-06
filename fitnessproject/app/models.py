@@ -3,6 +3,7 @@ from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser, PermissionsMixin
 )
 from django.urls import reverse_lazy
+from django.core.exceptions import ValidationError
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password):
@@ -48,3 +49,14 @@ class Goal(models.Model):
     
     def __str__(self):
         return self.title
+
+class ExerciseSchedule(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    exercise = models.CharField(max_length=100)
+    memo = models.TextField(blank=True)
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.exercise} ({self.date} {self.start_time}-{self.end_time})"

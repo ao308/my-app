@@ -10,8 +10,8 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Goal
-from .forms import GoalForm
-
+from .forms import GoalForm, ExerciseScheduleForm
+from datetime import time, datetime
 
 class IndexView(TemplateView):
     template_name = 'app/index.html'
@@ -101,3 +101,28 @@ def delete_goal(request, goal_id):
     goal = get_object_or_404(Goal, id=goal_id, user=request.user)
     goal.delete()
     return redirect('app:home') 
+
+@login_required
+def exercise_new(request):
+    date_str = request.GET.get("date")
+    if request.method == "POST":
+        form = ExerciseScheduleForm(request.POST)
+        if form.is_valid():
+            schedule = form.save(commit=False)
+            schedule.user = request.user
+            if date_str:
+                try:
+                    schedule.date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except ValueError:
+                    pass  # 不正な日付なら無視
+            schedule.save()
+            return redirect("app:mypage")
+    else:
+        initial = {}
+        if date_str:
+            try:
+                initial["date"] = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                pass
+        form = ExerciseScheduleForm(initial=initial)
+    return render(request, "app/exercise_form.html", {"form": form}) 
