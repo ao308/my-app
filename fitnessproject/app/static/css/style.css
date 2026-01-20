@@ -65,3 +65,11 @@ main {
   font-family: 'M PLUS 1p', 'メイリオ', sans-serif;
   font-weight: 500;
 }
+
+.today-item {
+  background-color: #f8d7da !important; /* 薄い赤 */
+}
+
+.today-item span {
+  color: black !important;
+}

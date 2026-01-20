@@ -1,8 +1,75 @@
-{% extends 'base.html' %}
-
-{% block title %}マイページ{% endblock %}
-
+{% extends "base.html" %}
 {% block content %}
-  <h2 class="text-center mb-4">マイページ</h2>
-  <p>マイページです。</p>
+
+{% if section == "email" or not section %}
+<div class="mb-5">
+  <h5 class="mb-3">メールアドレス変更</h5>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-2 mx-auto" style="max-width: 350px;">
+      <label class="form-label">現在のメールアドレス</label>
+      <input type="email" class="form-control" value="{{ request.user.email }}" readonly>
+    </div>
+
+    <div class="mb-2 mx-auto" style="max-width: 350px;">
+      <label class="form-label">新しいメールアドレス</label>
+      {{ email_form.email }}
+    </div>
+
+    <div class="text-center">
+      <button type="submit" name="email_submit" class="btn btn-primary mt-3">変更</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if section == "password" or not section %}
+<hr>
+
+<div class="mb-5">
+  <h5 class="mb-3">パスワード変更</h5>
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-2 mx-auto" style="max-width: 300px;">
+      <label class="form-label">現在のパスワード</label>
+      {{ password_form.old_password }}
+      {% for error in password_form.old_password.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="mb-2 mx-auto" style="max-width: 300px;">
+      <label class="form-label">新しいパスワード</label>
+      {{ password_form.new_password1 }}
+      {% for error in password_form.new_password1.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+
+      <p class="text-muted small mt-1">
+     ※半角英数字8文字以上
+      </p>
+    </div>
+
+    <div class="mb-2 mx-auto" style="max-width: 300px;">
+      <label class="form-label">パスワード再入力</label>
+      {{ password_form.new_password2 }}
+      {% for error in password_form.new_password2.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="text-center">
+      <button type="submit" name="password_submit" class="btn btn-primary mt-3">変更</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="text-center mt-4">
+  <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">ホームへ戻る</a>
+</div>
+
 {% endblock %}

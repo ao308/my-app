@@ -3,12 +3,34 @@
 
 {% block content %}
 <form method="post">
-  {% csrf_token %}
-
-  <div class="mb-3">
-    <label>運動の種類*</label>
-    {{ form.exercise|add_class:"form-control" }}
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    入力内容に誤りがあります。
+    <ul>
+      {% for field, errors in form.errors.items %}
+        <li>{{ field }}: {{ errors|join:", " }}</li>
+      {% endfor %}
+    </ul>
   </div>
+{% endif %}
+
+  {% csrf_token %}
+  <div class="mb-3">
+  <label class="form-label">運動の種類*</label>
+  {{ form.exercise|add_class:"form-control" }}
+</div>
+
+<div class="mb-3">
+  <label class="form-label">お気に入りから選ぶ</label>
+  <div class="d-flex flex-wrap gap-2">
+    {% for name in favorites %}
+      <button type="button" class="btn btn-outline-secondary btn-sm"
+              onclick="document.getElementById('id_exercise').value = '{{ name }}'">
+        {{ name }}
+      </button>
+    {% endfor %}
+  </div>
+</div>
 
   <div class="mb-3">
     <label>メモ</label>
@@ -30,6 +52,13 @@
     {{ form.end_time|add_class:"form-select" }}
   </div>
 
+  <div class="mb-3 form-check">
+    {{ form.show_on_home|add_class:"form-check-input" }}
+    <label for="{{ form.show_on_home.id_for_label }}" class="form-check-label">
+    {{ form.show_on_home.label }}
+    </label>
+  </div>
+
   <div class="d-flex justify-content-center gap-2 mt-4">
     <button type="submit" class="btn btn-primary">登録</button>
   </div>
@@ -38,4 +67,14 @@
     <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">キャンセル</a>
   </div>
 </form>
+
+<script>
+document.getElementById("favoriteSelect").addEventListener("change", function () {
+  const value = this.value;
+  if (value) {
+    document.getElementById("id_exercise").value = value;
+  }
+});
+</script>
+
 {% endblock %}

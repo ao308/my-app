@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load form_tags %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label>運動内容*</label>
+    {{ form.exercise|add_class:"form-control" }}
+  </div>
+
+  <div class="mb-3">
+    <label>メモ</label>
+    {{ form.memo|add_class:"form-control" }}
+  </div>
+
+  <div class="mb-3">
+    <label>日付*</label>
+    {{ form.date|add_class:"form-control" }}
+    {% if form.date.errors %}
+      <div class="text-danger small mt-2">
+        {% for error in form.date.errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    <label>開始時間</label>
+    {{ form.start_time|add_class:"form-select" }}
+  </div>
+
+  <div class="mb-3">
+    <label>終了時間</label>
+    {{ form.end_time|add_class:"form-select" }}
+  </div>
+
+  <div class="mb-3 form-check">
+    {{ form.show_on_home|add_class:"form-check-input" }}
+    <label for="{{ form.show_on_home.id_for_label }}" class="form-check-label">
+      {{ form.show_on_home.label }}
+    </label>
+  </div>
+
+<div class="d-flex justify-content-center gap-2 mt-4">
+  <button type="submit" class="btn btn-primary">更新</button>
+</div>
+
+<div class="text-center mt-3">
+  <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">キャンセル</a>
+</div>
+</form>
+{% endblock %}

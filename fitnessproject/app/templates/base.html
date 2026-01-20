@@ -60,8 +60,8 @@
 #calendar {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
-  width: 100%;
-  max-width: 600px;
+  width: 600px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 10px;
   box-sizing: border-box;
@@ -82,8 +82,9 @@
 .fc-daygrid-day-frame {
   min-height: 42px;
   height: 42px;
-  overflow: hidden;
+  overflow: hidden; /* ← visible をやめる */
 }
+
 
 .fc-daygrid-day-number {
   font-size: 0.95rem;    
@@ -134,6 +135,10 @@
   border: 2px solid #ffe082 !important;  /* 少し濃いめの枠線で強調 */
 }
 
+/* FullCalendar のイベントバーを非表示にする */
+.fc-event {
+  display: none !important;
+}
 
 @media (max-width: 576px) {
   .fc .fc-toolbar-title {
@@ -155,6 +160,10 @@
   .fc .fc-daygrid-day-number {
     font-size: 0.7rem;
   }
+}
+
+.list-group-item.today-item {
+  background-color: #f8d7da !important;
 }
 
 </style>
@@ -179,9 +188,28 @@
         <div class="d-flex justify-content-center gap-3 mt-2">
           <a href="{% url 'app:objective' %}" class="nav-link">目標一覧</a>
           <a href="{% url 'app:favorite' %}" class="nav-link">お気に入り</a>
-          <a href="{% url 'app:mypage' %}" class="nav-link">マイページ</a>
-        </div>
+
+
+        <div class="dropdown">
+          <button class="btn nav-link dropdown-toggle p-0" type="button"
+                  id="mypageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          マイページ
+          </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="mypageDropdown">
+          <li>
+            <a class="dropdown-item" href="{% url 'app:mypage' %}?section=email">
+          メールアドレス変更
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'app:mypage' %}?section=password">
+          パスワード変更
+            </a>
+          </li>
+        </ul>
       </div>
+    </div>
+  </div>
       {% endblock %}
 
       <div class="p-4">

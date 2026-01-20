@@ -1,39 +1,112 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block content %}
+
+<div class="mb-4">
+    <div class="d-flex align-items-center mb-1">
+      <span class="fw-bold">目標</span>
+    </div>
 
 <ul class="list-group">
   {% for goal in goals %}
     <li class="list-group-item bg-success-subtle">
-      <span class="goal-font">目標：{{ goal.title }}</span></li>
+      <span class="goal-font">{{ goal.title }}</span>
+    </li>
   {% empty %}
     <li class="list-group-item">目標が登録されていません。</li>
   {% endfor %}
-</ul>
+  </ul>
+</div>
 
-<ul class="list-group">
-  {% for exercise in exercises %}
-    <li class="list-group-item bg-success-subtle">目標：{{ exercise.title }}</li>
-  {% empty %}
-    <li class="list-group-item">運動予定はありません。</li>
-  {% endfor %}
-</ul>
+<div>
+  <div class="d-flex align-items-center mb-1">
+    <span class="fw-bold">運動予定</span>
+  </div>
 
+{% if show_list %}
+  <ul class="list-group mt-3">
+    {% for exercise in exercises|dictsort:"date"|slice:":2" %}
+      {% with exercise.date|date:"Y-m-d" as ex_date %}
+        {% now "Y-m-d" as today %}
+
+        <li class="list-group-item d-flex justify-content-between align-items-center
+                   {% if ex_date == today %} today-item {% endif %}">
+
+          <div class="d-flex align-items-center gap-2">
+              <input type="checkbox"
+                     class="form-check-input {% if ex_date == today %}today-checkbox{% endif %}"
+                     onclick="goToRecord({{ exercise.id }})">
+            <span>{{ exercise.exercise }}</span>
+          </div>
+
+          {% if ex_date == today %}
+            <span class=" fw-bold">
+              {{ exercise.date|date:"n月j日" }} ({{ exercise.date|date:"D"|slice:":1" }})
+            </span>
+          {% else %}
+            <span class="text-muted">
+              {{ exercise.date|date:"n月j日" }} ({{ exercise.date|date:"D"|slice:":1" }})
+            </span>
+          {% endif %}
+        </li>
+
+      {% endwith %}
+    {% empty %}
+      <li class="list-group-item">予定が登録されていません。</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- カレンダー -->
 <div id="calendar" class="mt-5 mb-4"></div>
+
+<!-- 予定一覧モーダル -->
+<div class="modal fade" id="plan-list-modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title"><span id="plan-date"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <ul id="plan-list" class="list-group"></ul>
+
+        <div class="mt-3 d-flex justify-content-end gap-2">
+          <button class="btn btn-primary" id="new-plan-btn">新規予定登録</button>
+          <button class="btn btn-success" id="new-record-btn">新規記録登録</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
-  <script>
-    window.exerciseEvents = [
-      {% for exercise in exercises %}
-        {
-          title: "🏃 {{ exercise.title }}",
-          start: "{{ exercise.scheduled_date|date:'Y-m-d' }}",
-          color: "{{ exercise.is_done|yesno:'#198754,#ffc107' }}"
-        }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-    ];
-  </script>
-  <script src="{% static 'js/calendar.js' %}"></script>
-{% endblock %}
+<script>
+  window.exerciseEvents = [
+    {% for event in events %}
+      { 
+        id: "{{ event.id }}", 
+        title: "{{ event.title }}", 
+        date: "{{ event.date }}",
+        type: "{{ event.type }}",
+        is_record: {{ event.is_record|yesno:"true,false" }}
+      }
+      {% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+</script>
 
+<script>
+function goToRecord(id) {
+    window.location.href = `/exercise/record/?id=${id}`;
+}
+</script>
+
+<script src="{% static 'js/calendar.js' %}?v=23"></script>
+{% endblock %}

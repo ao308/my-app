@@ -1,8 +1,79 @@
-{% extends 'base.html' %}
-
-{% block title %}お気に入り{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
-  <h2 class="text-center mb-4">お気に入り管理</h2>
-  <p>お気に入り一覧です</p>
+<h3 class="mb-3">お気に入り管理</h3>
+
+{% if favorites %}
+  <ul class="list-group">
+    {% for s in favorites %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>{{ s.exercise }}</span>
+
+        <div class="d-flex gap-2">
+
+          <!-- 予定に追加 -->
+          <a href="/exercise/new/?exercise={{ s.exercise }}"
+             class="btn btn-sm btn-primary">
+            予定に追加
+          </a>
+
+          <!-- ★ 削除ボタン（fetch を呼ぶ） -->
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  onclick="removeFavorite('{{ s.id }}', this)">
+            削除
+          </button>
+
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="text-muted">お気に入りに登録している運動はありません。</p>
+{% endif %}
+
+<!-- ホームへ戻る -->
+<div class="text-center mt-4">
+  <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">
+    ホームへ戻る
+  </a>
+</div>
+
+<!-- ★★★ ここに JS を追加する ★★★ -->
+<script>
+function getCookie(name) {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [key, value] = cookie.trim().split('=');
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+}
+
+function removeFavorite(scheduleId, button) {
+  if (!confirm("お気に入りから削除しますか？")) return;
+
+  fetch(`/exercise/favorite/toggle/${scheduleId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+      "X-Requested-With": "XMLHttpRequest"
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success && !data.is_favorite) {
+      const item = button.closest(".list-group-item");
+      if (item) item.remove();
+    } else {
+      alert("削除に失敗しました");
+    }
+  })
+  .catch(err => {
+    console.error("削除エラー:", err);
+    alert("通信エラーが発生しました");
+  });
+}
+</script>
+
 {% endblock %}

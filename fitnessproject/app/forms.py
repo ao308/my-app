@@ -4,9 +4,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
-from .models import Goal, ExerciseSchedule
+from .models import Goal, ExerciseSchedule, ExerciseRecord
 from datetime import time
-
+from django.contrib.auth.forms import PasswordChangeForm as BasePasswordChangeForm
+import re
 
 User = get_user_model()
 
@@ -16,39 +17,52 @@ class RegistForm(forms.ModelForm):
         widget=forms.PasswordInput()
     )
 
-    class Meta():
+    class Meta:
         model = User
         fields = ['username', 'email', 'password']
-        widgets ={
+        widgets = {
             'password': forms.PasswordInput(),
         }
-        labels ={
+        labels = {
             'username': 'ユーザー名',
             'email': 'メールアドレス',
             'password': 'パスワード',
         }
 
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        # 半角英字チェック
+        if not re.search(r"[A-Za-z]", password):
+            raise ValidationError("パスワードには半角英字を含めてください。")
+
+        # 半角数字チェック
+        if not re.search(r"[0-9]", password):
+            raise ValidationError("パスワードには半角数字を含めてください。")
+
+        # 8文字以上チェック（Django標準でもチェックされるが明示）
+        if len(password) < 8:
+            raise ValidationError("パスワードは8文字以上で入力してください。")
+
+        return password
+
     def clean(self):
         cleaned_data = super().clean()
-        email = cleaned_data.get('email')
         password = cleaned_data.get('password')
         password2 = cleaned_data.get('password2')
 
-        if email and User.objects.filter(email=email).exists():
-            self.add_error('email','このメールアドレスは既に登録されています')
-        if password and len(password) < 8:
-            self.add_error('password','パスワードは8文字以上で入力してください')
         if password and password2 and password != password2:
-            self.add_error('password2','パスワードが一致しません')
+            self.add_error('password2', 'パスワードが一致しません')
+
         return cleaned_data
-    
+
     def save(self, commit=True):
-        user = super(). save(commit=False)
-        validate_password(self.cleaned_data['password'], user)
+        user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
         return user
+
 
 
 class UserLoginForm(forms.Form):
@@ -112,8 +126,14 @@ class ExerciseScheduleForm(forms.ModelForm):
 
     class Meta:
         model = ExerciseSchedule
-        fields = ["exercise", "memo", "date", "start_time", "end_time"]
-
+        fields = ["exercise", "memo", "date", "start_time", "end_time", "show_on_home"]
+        widgets = {
+            "show_on_home": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+        labels = {
+            "show_on_home": "ホーム画面に表示する",
+        }
+        
     def clean(self):
         cleaned_data = super().clean()
         start = cleaned_data.get("start_time")
@@ -123,3 +143,39 @@ class ExerciseScheduleForm(forms.ModelForm):
             self.add_error("end_time", "終了時間は開始時間より後にしてください")
 
         return cleaned_data
+    
+class ExerciseRecordForm(forms.ModelForm):
+    class Meta:
+        model = ExerciseRecord
+        fields = ["memo", "rating"]
+        widgets = {
+            "memo": forms.Textarea(attrs={"class": "form-control"}),
+            "rating": forms.HiddenInput(),
+        }
+
+    def clean_rating(self):
+        rating = self.cleaned_data.get("rating")
+        if rating in [None, 0]:
+            raise forms.ValidationError("頑張り度を選択してください")
+        return rating
+
+class EmailChangeForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["email"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"class": "form-control"})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 表示時は空欄にする
+        self.fields["email"].initial = ""
+
+
+class CustomPasswordChangeForm(BasePasswordChangeForm):
+    """Bootstrap対応のパスワード変更フォーム"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"

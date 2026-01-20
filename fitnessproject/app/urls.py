@@ -19,6 +19,12 @@ urlpatterns = [
     path('goal/<int:goal_id>/complete/', views.complete_goal, name='complete_goal'),
     path('goals/create/', views.create_goal, name='create_goal'),
     path("exercise/new/", views.exercise_new, name="exercise_new"),
+    path('exercise/edit/<int:pk>/', views.exercise_edit, name='exercise_edit'),
+    path('exercise/record/', views.exercise_record, name='exercise_record'),
+    path('exercise/record/edit/', views.exercise_record_edit, name='exercise_record_edit'),
+    path('exercise/delete/<int:pk>/', views.exercise_delete, name='exercise_delete'),
+    path("record/delete/<int:pk>/", views.record_delete, name="record_delete"),
     path('favorite', FavoriteView.as_view(), name='favorite'),
+    path("exercise/favorite/toggle/<int:pk>/", views.toggle_favorite, name="toggle_favorite"),
     path('mypage', MypageView.as_view(), name='mypage'),
 ]
