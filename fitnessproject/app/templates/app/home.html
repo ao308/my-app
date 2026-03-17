@@ -5,30 +5,50 @@
 
 <div class="mb-4">
     <div class="d-flex align-items-center mb-1">
-      <span class="fw-bold">目標</span>
+      <h4 class="title">目標</h4>
     </div>
 
 <ul class="list-group">
   {% for goal in goals %}
-    <li class="list-group-item bg-success-subtle">
-      <span class="goal-font">{{ goal.title }}</span>
-    </li>
+  <li class="list-group-item bg-success-subtle d-flex justify-content-between align-items-center">
+
+  <!-- 左側：チェック＋タイトル -->
+  <div class="d-flex align-items-center gap-2">
+    <form method="post" action="{% url 'app:complete_goal' goal.id %}">
+      {% csrf_token %}
+      <input type="checkbox" class="goal-checkbox" onchange="this.form.submit()">
+    </form>
+    <span class="goal-font">{{ goal.title }}</span>
+  </div>
+
+  <!-- 右側：期限 -->
+  <div>
+    <span class="text-muted">
+      {% if goal.no_deadline %}
+        無期限
+      {% else %}
+        {{ goal.due_date|date:"n月j日" }} ({{ goal.due_date|date:"D"|slice:":1" }})
+      {% endif %}
+    </span>
+  </div>
+
+</li>
   {% empty %}
     <li class="list-group-item">目標が登録されていません。</li>
   {% endfor %}
-  </ul>
+</ul>
 </div>
 
 <div>
   <div class="d-flex align-items-center mb-1">
-    <span class="fw-bold">運動予定</span>
+    <h4 class="title">運動予定</h4>
   </div>
 
 {% if show_list %}
+  {% now "Y-m-d" as today %}
   <ul class="list-group mt-3">
     {% for exercise in exercises|dictsort:"date"|slice:":2" %}
-      {% with exercise.date|date:"Y-m-d" as ex_date %}
-        {% now "Y-m-d" as today %}
+      {% with ex_date=exercise.date|date:"Y-m-d" %}
 
         <li class="list-group-item d-flex justify-content-between align-items-center
                    {% if ex_date == today %} today-item {% endif %}">
@@ -61,7 +81,7 @@
 <!-- カレンダー -->
 <div id="calendar" class="mt-5 mb-4"></div>
 
-<!-- 予定一覧モーダル -->
+<!-- モーダル -->
 <div class="modal fade" id="plan-list-modal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -75,13 +95,20 @@
         <ul id="plan-list" class="list-group"></ul>
 
         <div class="mt-3 d-flex justify-content-end gap-2">
-          <button class="btn btn-primary" id="new-plan-btn">新規予定登録</button>
-          <button class="btn btn-success" id="new-record-btn">新規記録登録</button>
+          <button class="btn btn-primary" id="new-plan-btn">予定作成</button>
+              <a href="{% url 'app:exercise_record_new' %}"
+                 class="btn btn-success"
+                 id="new-record-btn"
+                 role="button">
+              運動を記録
+              </a>
         </div>
       </div>
 
     </div>
   </div>
+</div>
+
 </div>
 
 {% endblock %}
@@ -90,14 +117,13 @@
 <script>
   window.exerciseEvents = [
     {% for event in events %}
-      { 
-        id: "{{ event.id }}", 
-        title: "{{ event.title }}", 
+      {
+        id: "{{ event.id }}",
+        title: "{{ event.title }}",
         date: "{{ event.date }}",
         type: "{{ event.type }}",
         is_record: {{ event.is_record|yesno:"true,false" }}
-      }
-      {% if not forloop.last %},{% endif %}
+      }{% if not forloop.last %},{% endif %}
     {% endfor %}
   ];
 </script>
@@ -108,5 +134,5 @@ function goToRecord(id) {
 }
 </script>
 
-<script src="{% static 'js/calendar.js' %}?v=23"></script>
+<script src="{% static 'js/calendar.js' %}?v=27"></script>
 {% endblock %}

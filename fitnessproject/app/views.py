@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .forms import EmailChangeForm, CustomPasswordChangeForm
+from django.contrib import messages
 
 class IndexView(TemplateView):
     template_name = 'app/index.html'
@@ -46,10 +47,6 @@ class UserLogoutView(View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return redirect('app:user_login')
-    
-class ObjectiveView(LoginRequiredMixin, TemplateView):
-    template_name = 'app/objective.html'
-    login_url = 'app:user_login'
 
 class FavoriteView(LoginRequiredMixin, TemplateView):
     template_name = 'app/favorite.html'
@@ -84,16 +81,15 @@ class MypageView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         section = request.GET.get("section")
 
-        # メールアドレス変更
         if "email_submit" in request.POST:
             email_form = EmailChangeForm(request.POST, instance=request.user)
             password_form = CustomPasswordChangeForm(user=request.user)
 
             if email_form.is_valid():
                 email_form.save()
-                return redirect("app:mypage")
+                messages.success(request, "メールアドレスを変更しました。")
+                return redirect("/mypage/?section=email")
 
-        # パスワード変更
         elif "password_submit" in request.POST:
             email_form = EmailChangeForm()
             password_form = CustomPasswordChangeForm(user=request.user, data=request.POST)
@@ -101,7 +97,8 @@ class MypageView(LoginRequiredMixin, TemplateView):
             if password_form.is_valid():
                 user = password_form.save()
                 update_session_auth_hash(request, user)
-                return redirect("app:mypage")
+                messages.success(request, "パスワードを変更しました。")
+                return redirect("/mypage/?section=password")
 
         return render(request, self.template_name, {
             "email_form": email_form,
@@ -109,61 +106,70 @@ class MypageView(LoginRequiredMixin, TemplateView):
             "section": section,
         })
 
+@login_required
+def goal_list(request):
+    goals = Goal.objects.filter(user=request.user).order_by('is_completed', 'due_date')
+    return render(request, 'app/goal.html', {'goals': goals})
 
-def objective_list(request):
-    goals = Goal.objects.filter(user=request.user)
-    return render(request, 'app/objective.html', {'goals': goals})
-
+@login_required
 def edit_goal(request, goal_id):
     goal = get_object_or_404(Goal, id=goal_id, user=request.user)
     if request.method == 'POST':
         form = GoalForm(request.POST, instance=goal)
         if form.is_valid():
             form.save()
-            return redirect('app:objective')
+            return redirect('app:goal_list')
     else:
         form = GoalForm(instance=goal)
     return render(request, 'app/edit_goal.html', {'form': form, 'goal': goal})
 
 @login_required
 def home(request):
-    goals = Goal.objects.filter(user=request.user, show_on_home=True)
+    goals = Goal.objects.filter(
+        user=request.user,
+        show_on_home=True,
+        is_completed=False
+    ).order_by('no_deadline', 'due_date')[:2]
 
-    # ホーム画面に出すのは未記録だけ
     schedules = ExerciseSchedule.objects.filter(
         user=request.user,
         is_record=False
     ).order_by("date")
 
-# カレンダー用は全件（記録済みも含む）
     all_schedules = ExerciseSchedule.objects.filter(user=request.user)
     all_records = ExerciseRecord.objects.filter(user=request.user)
 
-# 予定（ExerciseSchedule）
     events = [
         {
             "type": "schedule",
             "id": s.pk,
             "title": s.exercise,
-            "date": s.date.strftime("%Y-%m-%d"),
+            "date": s.date.strftime("%Y-%m-%d") if s.date else "",
             "is_record": s.is_record,
         }
         for s in all_schedules
     ]
 
-# 記録（ExerciseRecord）
-    events += [
-        {
+    # ★ schedule=None の記録に対応した修正版
+    for r in all_records:
+        if r.schedule:
+            title = r.schedule.exercise
+            date = r.schedule.date.strftime("%Y-%m-%d")
+        else:
+            # 新規記録（schedule=None）
+            title = r.exercise
+            # 記録日時を使う（created_at が無ければ r.date を使う）
+            date = r.created_at.strftime("%Y-%m-%d") if hasattr(r, "created_at") else ""
+
+        events.append({
             "type": "record",
             "id": r.pk,
-            "title": r.schedule.exercise,
-            "date": r.schedule.date.strftime("%Y-%m-%d"),
+            "title": title,
+            "date": date,
             "rating": r.rating,
-        }
-        for r in all_records
-    ]
+            "is_record": True,
+        })
 
-    # ★ここだけ修正！
     exercises = schedules.filter(show_on_home=True).order_by("date")[:2]
 
     return render(request, 'app/home.html', {
@@ -181,7 +187,7 @@ def create_goal(request):
             goal = form.save(commit=False)
             goal.user = request.user
             goal.save()
-            return redirect('app:objective')
+            return redirect('app:goal_list')
     else:
         form = GoalForm()
     return render(request, 'app/create_goal.html', {'form': form})
@@ -191,20 +197,26 @@ def complete_goal(request, goal_id):
     goal = get_object_or_404(Goal, id=goal_id, user=request.user)
     goal.is_completed = True
     goal.save()
-    return redirect('app:objective') 
+    return redirect('app:goal_list')
+
+@login_required
+def undo_complete_goal(request, goal_id):
+    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+    goal.is_completed = False
+    goal.save()
+    return redirect('app:goal_list') 
 
 @login_required
 def delete_goal(request, goal_id):
     goal = get_object_or_404(Goal, id=goal_id, user=request.user)
     goal.delete()
-    return redirect('app:home') 
+    return redirect('app:goal_list') 
 
 @login_required
 def exercise_new(request):
     date_str = request.GET.get("date")
     exercise_name = request.GET.get("exercise")  # ★ お気に入りから来た運動名
 
-    # ★ お気に入り一覧を取得
     favorites = ExerciseSchedule.objects.filter(
         user=request.user,
         is_favorite=True
@@ -240,7 +252,7 @@ def exercise_new(request):
 
     return render(request, "app/exercise_form.html", {
         "form": form,
-        "favorites": favorites,  # ★ テンプレートへ渡す
+        "favorites": favorites,  
     })
 
 @login_required
@@ -262,7 +274,6 @@ def exercise_record(request):
 
             return redirect("app:home")
         else:
-            # ★ バリデーションエラー時は form をそのまま返す
             return render(request, "app/exercise_record.html", {
                 "form": form,
                 "schedule": schedule,
@@ -276,6 +287,28 @@ def exercise_record(request):
         "schedule": schedule,
     })
 
+@login_required
+def exercise_record_new(request):
+    if request.method == "POST":
+        form = ExerciseRecordForm(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.user = request.user
+            record.schedule = None
+            record.save()
+            return redirect("app:home")
+    else:
+        form = ExerciseRecordForm()
+
+    favorites = ExerciseSchedule.objects.filter(
+        user=request.user,
+        is_favorite=True
+    ).values_list("exercise", flat=True).distinct()
+
+    return render(request, "app/exercise_record_new.html", {
+        "form": form,
+        "favorites": favorites,
+    })
 
 @login_required
 def exercise_edit(request, pk):
@@ -308,13 +341,12 @@ def record_delete(request, pk):
     if request.method == "POST":
         try:
             record = ExerciseRecord.objects.get(pk=pk, user=request.user)
-            schedule = record.schedule  # 対応する予定を取得
+            schedule = record.schedule
 
-            record.delete()  # 記録を削除
+            record.delete() 
 
-            # ★ 予定を「未記録」に戻す
             schedule.is_record = False
-            schedule.show_on_home = True  # 必要ならホームに戻す
+            schedule.show_on_home = True  
             schedule.save()
 
             return JsonResponse({"success": True})
@@ -349,11 +381,39 @@ def toggle_favorite(request, pk):
         return JsonResponse({"error": "Invalid method"}, status=400)
 
     schedule = get_object_or_404(ExerciseSchedule, pk=pk, user=request.user)
+
+    if not schedule.is_favorite:
+        ExerciseSchedule.objects.filter(
+            user=request.user,
+            exercise=schedule.exercise,
+            is_favorite=True
+        ).exclude(pk=schedule.pk).update(is_favorite=False)
+
     schedule.is_favorite = not schedule.is_favorite
     schedule.save()
 
-    # ★ ページからのフォーム送信ならリダイレクト
     if request.headers.get("x-requested-with") != "XMLHttpRequest":
         return redirect("app:favorite")
 
     return JsonResponse({"success": True, "is_favorite": schedule.is_favorite})
+
+@login_required
+def favorite_add(request):
+    if request.method == "POST":
+        name = request.POST.get("exercise")
+
+        ExerciseSchedule.objects.filter(
+            user=request.user,
+            exercise=name,
+            is_favorite=True
+        ).update(is_favorite=False)
+
+        ExerciseSchedule.objects.create(
+            user=request.user,
+            exercise=name,
+            date=None,
+            is_favorite=True,
+            is_record=False,
+        )
+
+        return redirect("app:favorite")

@@ -13,13 +13,14 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=999">
     <title>Portfolio</title>
   </head>
 
   <body class="bg-white text-dark">
     <nav class="navbar navbar-expand-lg navbar-light bg-white">
       <div class="container">
+      </div>
     </nav>
 
     <main>
@@ -27,28 +28,56 @@
         <div class="card border-0 shadow-none text-center">
           <div class="p-4 bg-white text-dark">
             <h2 class="title">作品No.1 フィットネスログ</h2>
-            <img src="{% static 'img/portfolio.JPG' %}" alt="フィットネスログ画像" class="img-fluid" />
+
+            <!-- 3枚横並び -->
+            <div class="row g-3 text-center mt-4">
+
+              <div class="col-12 col-md-4">
+                <img src="{% static 'img/calendar.jpeg' %}"
+                     alt="ホーム画面"
+                     class="img-fluid" />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <img src="{% static 'img/schedule.jpeg' %}"
+                     alt="予定作成"
+                     class="img-fluid sub-img" />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <img src="{% static 'img/record.jpeg' %}"
+                     alt="運動記録"
+                     class="img-fluid sub-img" />
+              </div>
+
+            </div>
+
           </div>
         </div>
       </div>
     </main>
 
-    <p class="fs-5 lead mb-4 text-center">
-      フィットネスログは、健康維持に関心がある人のための運動履歴の記録、ToDo・スケジュール管理アプリです。<br>
-      このアプリを利用することで、日々の運動の目標・予定・履歴を視認することができ、運動を継続するサポートをします。<br>
+    <p class="lead mb-4 text-center">
+      フィットネスログは、健康維持に関心がある人のための<wbr>
+      運動履歴の記録、ToDo・スケジュール管理アプリです。<br>
+      このアプリを利用することで、<wbr>
+      日々の運動の目標・予定・履歴を視認することができ、<wbr>
+      運動を継続するサポートをします。
     </p>
 
     <div class="container text-center fs-5 py-5">
-        <a href="{% static 'pdf/企画書.pdf' %}" target="_blank">企画書</a>
-        <a href="{% static 'pdf/画面設計図.pdf' %}" target="_blank"> 画面設計図</a>
-        <a href="{% static 'svg/画面遷移図.drawio.svg' %}" target="_blank"> 画面遷移図</a>
-        <a href="{% static 'svg/ER図.drawio.svg' %}" target="_blank"> ER図</a>
+      <a href="{% static 'pdf/企画書.pdf' %}" target="_blank">企画書</a>
+      <a href="{% static 'pdf/画面設計図.pdf' %}" target="_blank"> 画面設計図</a>
+      <a href="{% static 'svg/画面遷移図.drawio.svg' %}" target="_blank"> 画面遷移図</a>
+      <a href="{% static 'svg/ER図.drawio.svg' %}" target="_blank"> ER図</a>
 
-        <div class="mt-4">
-          <a href="{% url 'app:user_login' %}?next=/home" class="btn btn-warning w-30 text-white">フィットネスログアプリへ</a>
-         </div>
-        
+      <div class="mt-4">
+        <a href="{% url 'app:user_login' %}?next=/home" class="btn btn-warning w-30 text-white">
+          フィットネスログアプリへ
+        </a>
+      </div>
     </div>
+
     {% block extra_js %} {% endblock %}
   </body>
 </html>

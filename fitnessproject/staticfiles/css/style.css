@@ -1,0 +1,153 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+main {
+  min-height: 100vh;
+  padding-top: 70px;
+}
+
+.navbar-nav {
+  flex-direction: row !important;
+}
+
+.nav-color {
+  color: black;
+}
+
+.nav-color:hover {
+  color: #ee6c4d;
+}
+
+.nav-color:after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: #ee6c4d;
+  margin-top: 6px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.3s ease-in-out;
+}
+
+.nav-color:hover:after {
+  transform: translateY(0px);
+  opacity: 1;
+}
+
+.top {
+  position: relative;
+  text-align: center;
+}
+
+.top img {
+  object-fit: cover;
+  height: 500px;
+}
+
+.goal-font {
+  font-family: 'Noto Sans JP', '游ゴシック', 'メイリオ', sans-serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+}
+
+.exercise-font {
+  font-family: 'M PLUS 1p', 'メイリオ', sans-serif;
+  font-weight: 500;
+}
+
+.today-item {
+  background-color: #f8d7da !important;
+}
+
+.today-item span {
+  color: black !important;
+}
+
+.img-fluid {
+  width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.container {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.content-box {
+  max-width: 600px;
+  margin: 0px auto;
+  background-color: #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.box-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: #ffbf50;
+  padding: 0.7rem 1.2rem;
+}
+
+.content-inner {
+  padding: 1.6rem 1rem;
+}
+
+h4.title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+
+
+/* スマホ調整 */
+@media screen and (max-width: 576px) {
+
+  .container {
+    padding: 1rem 0.8rem 1.5rem;
+  }
+
+  p.lead {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+    padding: 0 0.5rem;
+  }
+
+    .content-box {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .box-header {
+    padding: 0.5rem 1rem !important;
+  }
+
+  main {
+    padding-top: 48px !important; /* ← スマホはさらに詰める */
+  }
+
+  .content-inner {
+    padding-top: 0.8rem !important; /* ← 上だけ詰める */
+  }
+
+    #calendar {
+    width: 100% !important;
+    padding: 0 0.5rem;
+  }
+}

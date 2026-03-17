@@ -16,7 +16,7 @@
   </div>
 
   <div class="mb-3">
-  <label>期限（必須：期限か無期限のどちらかを選択）</label>
+  <label>期限（必須：日付か無期限のどちらかを選択）</label>
   {{ form.due_date|add_class:"form-control" }}
 
   {% if form.due_date.errors %}
@@ -47,7 +47,7 @@
   </div>
 
   <div class="mt-3 text-center">
-    <a href="{% url 'app:objective' %}" class="text-decoration-underline text-muted">キャンセル</a>
+    <a href="{% url 'app:goal_list' %}" class="text-decoration-underline text-muted">キャンセル</a>
   </div>
 </form>
 {% endblock %}

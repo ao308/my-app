@@ -11,6 +11,7 @@ import re
 
 User = get_user_model()
 
+
 class RegistForm(forms.ModelForm):
     password2 = forms.CharField(
         label='パスワード再入力',
@@ -32,15 +33,12 @@ class RegistForm(forms.ModelForm):
     def clean_password(self):
         password = self.cleaned_data.get("password")
 
-        # 半角英字チェック
         if not re.search(r"[A-Za-z]", password):
             raise ValidationError("パスワードには半角英字を含めてください。")
 
-        # 半角数字チェック
         if not re.search(r"[0-9]", password):
             raise ValidationError("パスワードには半角数字を含めてください。")
 
-        # 8文字以上チェック（Django標準でもチェックされるが明示）
         if len(password) < 8:
             raise ValidationError("パスワードは8文字以上で入力してください。")
 
@@ -64,7 +62,6 @@ class RegistForm(forms.ModelForm):
         return user
 
 
-
 class UserLoginForm(forms.Form):
     email = forms.EmailField(label="メールアドレス")
     password = forms.CharField(label="パスワード", widget=forms.PasswordInput())
@@ -84,7 +81,8 @@ class UserLoginForm(forms.Form):
 
         self.user = user
         return cleaned_data
-    
+
+
 class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
@@ -104,24 +102,42 @@ class GoalForm(forms.ModelForm):
 
         return cleaned_data
 
+
 TIME_CHOICES = [
     (time(hour % 24, minute), f"{hour % 24:02d}:{minute:02d}")
-    for hour in range(0, 25)   # 0〜24時まで
-    for minute in (0, 30)      # 0分と30分
+    for hour in range(0, 25)
+    for minute in (0, 30)
 ]
 
+
 class ExerciseScheduleForm(forms.ModelForm):
+    # ★ 記録画面と同じ rows=2 のメモ欄
+    memo = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2})
+    )
+
+    # ★ HTML5 required を避けるため Django 側でバリデーション
+    exercise = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        error_messages={"required": "運動の種類を入力してください"}
+    )
+
     date = forms.DateField(
         label="日付",
-        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        error_messages={"required": "日付を選択してください"}
     )
     start_time = forms.TimeField(
         label="開始時間",
-        widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"})
+        widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
+        error_messages={"required": "開始時間を選択してください"}
     )
     end_time = forms.TimeField(
         label="終了時間",
-        widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"})
+        widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
+        error_messages={"required": "終了時間を選択してください"}
     )
 
     class Meta:
@@ -133,7 +149,14 @@ class ExerciseScheduleForm(forms.ModelForm):
         labels = {
             "show_on_home": "ホーム画面に表示する",
         }
-        
+
+    # ★ Django 側で exercise の必須チェック
+    def clean_exercise(self):
+        exercise = self.cleaned_data.get("exercise")
+        if not exercise:
+            raise ValidationError("運動の種類を入力してください")
+        return exercise
+
     def clean(self):
         cleaned_data = super().clean()
         start = cleaned_data.get("start_time")
@@ -143,13 +166,19 @@ class ExerciseScheduleForm(forms.ModelForm):
             self.add_error("end_time", "終了時間は開始時間より後にしてください")
 
         return cleaned_data
-    
+
+
 class ExerciseRecordForm(forms.ModelForm):
+    exercise = forms.CharField(required=False)
+
     class Meta:
         model = ExerciseRecord
-        fields = ["memo", "rating"]
+        fields = ["exercise", "memo", "start_time", "end_time", "rating"]
         widgets = {
-            "memo": forms.Textarea(attrs={"class": "form-control"}),
+            "exercise": forms.TextInput(attrs={"class": "form-control"}),
+            "memo": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+            "start_time": forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
+            "end_time": forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
             "rating": forms.HiddenInput(),
         }
 
@@ -158,6 +187,7 @@ class ExerciseRecordForm(forms.ModelForm):
         if rating in [None, 0]:
             raise forms.ValidationError("頑張り度を選択してください")
         return rating
+
 
 class EmailChangeForm(forms.ModelForm):
     class Meta:
@@ -169,12 +199,10 @@ class EmailChangeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 表示時は空欄にする
         self.fields["email"].initial = ""
 
 
 class CustomPasswordChangeForm(BasePasswordChangeForm):
-    """Bootstrap対応のパスワード変更フォーム"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():

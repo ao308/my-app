@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (!calendarEl) return;
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: window.innerWidth < 576 ? 'listWeek' : 'dayGridMonth',
+    initialView: 'dayGridMonth',
     locale: 'ja',
     contentHeight: 'auto',
 
@@ -120,7 +120,7 @@ function showPlans() {
       const recordBtn = document.createElement("button");
       recordBtn.className = "btn btn-sm btn-primary";
       recordBtn.textContent = "記録";
-      recordBtn.onclick = () => goTo("record", ev.id, date);
+      recordBtn.onclick = () => window.location.href = `/exercise/record/?id=${ev.id}`;
 
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "btn btn-sm btn-danger";
@@ -240,23 +240,26 @@ function deletePlan(id) {
 function deleteRecord(id) {
   if (!confirm("本当に削除しますか？")) return;
 
-  fetch(`/record/delete/${id}/`, {
+  fetch(`/exercise/record/delete/${id}/`, {
     method: "POST",
     headers: {
-      "X-CSRFToken": getCookie("csrftoken")
-    }
+      "X-CSRFToken": getCookie("csrftoken"),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({})
   })
   .then(response => response.json())
   .then(data => {
     if (data.success) {
+
       const modalEl = document.getElementById("plan-list-modal");
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
-
       document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
       document.body.classList.remove('modal-open');
 
       window.location.href = "/home";
+
     } else {
       alert("削除に失敗しました");
     }

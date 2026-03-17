@@ -61,7 +61,7 @@ class ExerciseSchedule(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise = models.CharField(max_length=100)
     memo = models.TextField(blank=True, null=True)
-    date = models.DateField()
+    date = models.DateField(null=True, blank=True)
     start_time = models.TimeField(blank=True, null=True)
     end_time = models.TimeField(blank=True, null=True)
     show_on_home = models.BooleanField(default=False)
@@ -73,9 +73,17 @@ class ExerciseSchedule(models.Model):
     
 class ExerciseRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    schedule = models.ForeignKey(ExerciseSchedule, on_delete=models.CASCADE)
+    schedule = models.ForeignKey(
+        ExerciseSchedule,
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    exercise = models.CharField(max_length=100, default="")
     memo = models.TextField(blank=True)
-    rating = models.IntegerField(null=False, blank=False)  # ★必須
-    time = models.IntegerField(null=True, blank=True)    # 任意
-    
+    rating = models.IntegerField(null=False, blank=False)
+
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+
+    time = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -2,14 +2,27 @@
 {% load form_tags %}
 
 {% block content %}
-<form method="post">
+
+<style>
+  .mb-3 {
+    margin-bottom: 0.6rem !important;
+  }
+  .form-label {
+    margin-bottom: 0.2rem !important;
+  }
+</style>
+
+<form id="record-form" method="post" style="padding: 0 1rem;">
   {% csrf_token %}
 
+  <!-- 運動の種類 -->
   <div class="mb-3">
-    <label class="form-label">実施した運動*</label>
-    <input type="text" class="form-control" value="{{ schedule.exercise }}" readonly>
+    <label class="form-label">実施した運動</label>
+    <input type="text" class="form-control" value="{{ schedule.exercise }}" disabled>
+    {{ form.exercise.as_hidden }}
   </div>
 
+  <!-- お気に入り -->
   <div class="mb-3">
     <div class="form-check">
       <input type="checkbox"
@@ -17,35 +30,40 @@
         id="favoriteCheck"
         data-id="{{ schedule.id }}"
         {% if schedule.is_favorite %}checked{% endif %}>
-      <label class="form-check-label" for="favoriteCheck">
-      お気に入り追加
-      </label>
+      <label class="form-check-label" for="favoriteCheck">お気に入り追加</label>
     </div>
   </div>
 
-
+  <!-- メモ -->
   <div class="mb-3">
     <label class="form-label">メモ</label>
-    {{ form.memo|add_class:"form-control" }}
+    {{ form.memo }}
   </div>
 
+  <!-- 日付 -->
   <div class="mb-3">
-    <label class="form-label">日付*</label>
-    <input type="date" class="form-control" value="{{ schedule.date|date:'Y-m-d' }}" readonly>
+    <label class="form-label">日付</label>
+    <input type="date" class="form-control" value="{{ schedule.date|date:'Y-m-d' }}" disabled>
   </div>
+  {{ form.date.as_hidden }}
 
+  <!-- 開始時間 -->
   <div class="mb-3">
     <label class="form-label">開始時間</label>
-    <input type="time" class="form-control" value="{{ schedule.start_time|time:'H:i' }}" readonly>
+    <input type="time" class="form-control" value="{{ schedule.start_time|time:'H:i' }}" disabled>
   </div>
+  {{ form.start_time.as_hidden }}
 
+  <!-- 終了時間 -->
   <div class="mb-3">
     <label class="form-label">終了時間</label>
-    <input type="time" class="form-control" value="{{ schedule.end_time|time:'H:i' }}" readonly>
+    <input type="time" class="form-control" value="{{ schedule.end_time|time:'H:i' }}" disabled>
   </div>
+  {{ form.end_time.as_hidden }}
 
+  <!-- 頑張り度 -->
 <div class="mb-3">
-  <label class="form-label">頑張り度</label>
+  <label class="form-label">頑張り度*</label>
   <div id="rating-stars" style="font-size: 2rem; cursor: pointer;">
     <span data-value="1">☆</span>
     <span data-value="2">☆</span>
@@ -55,42 +73,28 @@
   </div>
   <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
 
-  <!-- ★ Django のエラー表示 -->
   {% if form.rating.errors %}
-    <div class="text-danger small">{{ form.rating.errors.0 }}</div>
+    <div class="text-danger small mt-1">{{ form.rating.errors.0 }}</div>
   {% endif %}
 </div>
 
-  <div class="d-flex justify-content-center gap-2 mt-4">
-    <button type="submit" class="btn btn-success">記録する</button>
+  <!-- 記録ボタン -->
+  <div class="d-flex justify-content-center mt-4">
+    <button type="submit" class="btn btn-success w-50">記録</button>
   </div>
 
+  <!-- キャンセル -->
   <div class="text-center mt-3">
     <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">キャンセル</a>
   </div>
-</form>
 
-<div class="modal fade" id="requiredModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">入力エラー</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p>以下の項目を入力してください：</p>
-        <ul id="required-list"></ul>
-      </div>
-    </div>
-  </div>
-</div>
+</form>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const form = document.querySelector("form");
   const ratingInput = document.getElementById("id_rating");
-
   const stars = document.querySelectorAll("#rating-stars span");
+
   stars.forEach(star => {
     star.addEventListener("click", function () {
       const value = this.dataset.value;
@@ -102,69 +106,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  
   const currentRating = Number(ratingInput.value);
   if (currentRating > 0) {
     stars.forEach(s => {
       s.textContent = Number(s.dataset.value) <= currentRating ? "★" : "☆";
     });
   }
-
-  
-  form.addEventListener("submit", function (e) {
-    const missing = [];
-
-    if (!ratingInput.value || ratingInput.value === "0") {
-      missing.push("頑張り度");
-    }
-
-    if (missing.length > 0) {
-      e.preventDefault();
-
-      const list = document.getElementById("required-list");
-      list.innerHTML = "";
-      missing.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
-
-      bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("requiredModal")
-      ).show();
-    }
-  });
 });
-
-function toggleFavorite(event, scheduleId) {
-  event.preventDefault();  // ★ フォーム送信を止める
-
-  const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-
-  fetch(`/exercise/favorite/toggle/${scheduleId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": csrfToken
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("お気に入り更新:", data);
-  })
-  .catch(err => console.error("お気に入りエラー:", err));
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  const favoriteCheck = document.getElementById("favoriteCheck");
-
-  if (favoriteCheck) {
-    favoriteCheck.addEventListener("change", function (event) {
-      const scheduleId = this.dataset.id;
-      toggleFavorite(event, scheduleId);
-    });
-  }
-});
-
 </script>
 
 {% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load form_tags %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+
+  <!-- 運動の種類 -->
+  <div class="mb-3">
+    <label class="form-label">運動名*</label>
+    {{ form.exercise|add_class:"form-control" }}
+  </div>
+
+  <!-- お気に入り -->
+  <div class="mb-3">
+    <label class="form-label">お気に入りから選ぶ</label>
+    <div class="d-flex flex-wrap gap-2">
+      {% for name in favorites %}
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="document.getElementById('id_exercise').value = '{{ name }}'">
+          {{ name }}
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- メモ -->
+  <div class="mb-3">
+    <label class="form-label">メモ</label>
+    {{ form.memo|add_class:"form-control" }}
+  </div>
+
+  <!-- 開始時間 -->
+  <div class="mb-3">
+    <label class="form-label">開始時間*</label>
+    {{ form.start_time|add_class:"form-select" }}
+  </div>
+
+  <!-- 終了時間 -->
+  <div class="mb-3">
+    <label class="form-label">終了時間*</label>
+    {{ form.end_time|add_class:"form-select" }}
+  </div>
+
+  <!-- 頑張り度 -->
+  <div class="mb-3">
+    <label class="form-label">頑張り度*</label>
+    <div id="rating-stars" style="font-size: 2rem; cursor: pointer;">
+      <span data-value="1">☆</span>
+      <span data-value="2">☆</span>
+      <span data-value="3">☆</span>
+      <span data-value="4">☆</span>
+      <span data-value="5">☆</span>
+    </div>
+
+    <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
+  </div>
+
+  <!-- 登録ボタン -->
+  <div class="d-flex justify-content-center gap-2 mt-4">
+    <button type="submit" class="btn btn-primary">登録</button>
+  </div>
+
+  <div class="text-center mt-3">
+    <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">キャンセル</a>
+  </div>
+</form>
+
+<!-- エラーモーダル -->
+<div class="modal fade" id="requiredModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">入力エラー</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>以下の項目を入力してください：</p>
+        <ul id="required-list"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  const ratingInput = document.getElementById("id_rating");
+
+  // ★ 頑張り度の星 UI
+  const stars = document.querySelectorAll("#rating-stars span");
+  stars.forEach(star => {
+    star.addEventListener("click", function () {
+      const value = this.dataset.value;
+      ratingInput.value = value;
+
+      stars.forEach(s => {
+        s.textContent = Number(s.dataset.value) <= Number(value) ? "★" : "☆";
+      });
+    });
+  });
+
+  const currentRating = Number(ratingInput.value);
+  if (currentRating > 0) {
+    stars.forEach(s => {
+      s.textContent = Number(s.dataset.value) <= currentRating ? "★" : "☆";
+    });
+  }
+
+  // ★ 必須チェック
+  form.addEventListener("submit", function (e) {
+    const missing = [];
+
+    // 運動の種類（text input）
+    const exerciseInput = document.querySelector("[name='exercise']");
+    if (!exerciseInput.value.trim()) {
+      missing.push("運動名");
+    }
+
+    // 開始時間（select）
+    const startInput = document.querySelector("[name='start_time']");
+    if (startInput.selectedIndex === 0) {
+      missing.push("開始時間");
+    }
+
+    // 終了時間（select）
+    const endInput = document.querySelector("[name='end_time']");
+    if (endInput.selectedIndex === 0) {
+      missing.push("終了時間");
+    }
+
+    // 頑張り度
+    if (!ratingInput.value || ratingInput.value === "0") {
+      missing.push("頑張り度");
+    }
+
+    // モーダル表示
+    if (missing.length > 0) {
+      e.preventDefault();
+
+      const list = document.getElementById("required-list");
+      list.innerHTML = "";
+      missing.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        list.appendChild(li);
+      });
+
+      bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("requiredModal")
+      ).show();
+    }
+  });
+});
+</script>
+
+{% endblock %}

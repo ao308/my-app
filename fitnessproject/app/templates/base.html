@@ -6,216 +6,137 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/list.global.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <title>{% block title %}フィットネスログ{% endblock %}</title>
 
   <style>
+  .box-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #ffbf50;
+    padding: 1rem 1.5rem;
+  }
+
+  main {
+    padding-top: 90px;
+  }
+
+  .content-box {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+  .logout-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .nav-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .nav-link:hover {
+    color: #000;
+  }
+
+  .content-box {
+    max-width: 600px;
+    margin: 0px auto;
+    background-color: #ffffff;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .content-inner {
+    padding: 1.8rem 1rem 2rem;
+  }
+
+  h4.title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+
+  @media (max-width: 576px) {
     .content-box {
-      position: relative;
-      max-width: 500px;
-      margin: 40px auto;
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: visible;
+      margin: 0 !important;
+      border-radius: 0;
+      box-shadow: none;
     }
 
     .box-header {
-      background-color: #ffbf50;
-      padding: 1rem 1.5rem;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
+      padding: 1rem 1.5rem !important;
     }
-
-    .logout-button {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-    }
-
-    .nav-link {
-      color: #333;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .nav-link:hover {
-      color: #000;
-    }
-
-    @media (max-width: 576px) {
-      .content-box {
-        margin: 20px auto;
-        border-radius: 0;
-        box-shadow: none;
-      }
-    }
-
-  .goal-font {
-    font-family: 'Noto Sans JP', '游ゴシック', 'メイリオ', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
   }
-
-#calendar {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-  width: 600px;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 10px;
-  box-sizing: border-box;
-  overflow: hidden;
-  
-}
-
-.fc-col-header-cell {
-  padding: 1px 0;
-}
-
-.fc .fc-col-header-cell-cushion {
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-decoration: none !important;
-}
-
-.fc-daygrid-day-frame {
-  min-height: 42px;
-  height: 42px;
-  overflow: hidden; /* ← visible をやめる */
-}
-
-
-.fc-daygrid-day-number {
-  font-size: 0.95rem;    
-  font-weight: bold;
-  line-height: 1.2;
-  padding: 2px;
-  text-decoration: none !important;
-}
-
-/* 日曜を赤文字 */
-.fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion {
-  color: red !important;
-}
-
-/* 土曜を青文字 */
-.fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion {
-  color: blue !important;
-}
-
-/* 平日（月〜金）は黒文字 */
-.fc .fc-col-header-cell.fc-day-mon .fc-col-header-cell-cushion,
-.fc .fc-col-header-cell.fc-day-tue .fc-col-header-cell-cushion,
-.fc .fc-col-header-cell.fc-day-wed .fc-col-header-cell-cushion,
-.fc .fc-col-header-cell.fc-day-thu .fc-col-header-cell-cushion,
-.fc .fc-col-header-cell.fc-day-fri .fc-col-header-cell-cushion {
-  color: black !important;
-}
-
-/* 日付セル（日曜赤・土曜青・平日黒） */
-.fc .fc-day-sun .fc-daygrid-day-number {
-  color: red !important;
-}
-
-.fc .fc-day-sat .fc-daygrid-day-number {
-  color: blue !important;
-}
-
-.fc .fc-day-mon .fc-daygrid-day-number,
-.fc .fc-day-tue .fc-daygrid-day-number,
-.fc .fc-day-wed .fc-daygrid-day-number,
-.fc .fc-day-thu .fc-daygrid-day-number,
-.fc .fc-day-fri .fc-daygrid-day-number {
-  color: black !important;
-}
-
-.fc-day-today {
-  background-color: #ffecb3 !important;  /* パステル調の薄い黄色 */
-  border: 2px solid #ffe082 !important;  /* 少し濃いめの枠線で強調 */
-}
-
-/* FullCalendar のイベントバーを非表示にする */
-.fc-event {
-  display: none !important;
-}
-
-@media (max-width: 576px) {
-  .fc .fc-toolbar-title {
-    font-size: 0.9rem;
-  }
-
-  .fc .fc-col-header-cell-cushion {
-    font-size: 0.75rem;
-  }
-
-  .fc-col-header-cell {
-    padding: 3px 0;
-  }
-
-  .fc-daygrid-day-frame {
-    min-height: 45px;
-  }
-
-  .fc .fc-daygrid-day-number {
-    font-size: 0.7rem;
-  }
-}
-
-.list-group-item.today-item {
-  background-color: #f8d7da !important;
-}
-
 </style>
+<link rel="stylesheet" href="{% static 'css/style.css' %}?v=100">
 </head>
 
 <body class="bg-light">
   <main>
-    <div class="content-box">
-      {% block header %}
-      <div class="box-header {% block header_class %}orange-bg{% endblock %}">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="fw-bold" style="font-size: 1.4rem;">
-            <a href="{% url 'app:home' %}" class="text-decoration-none text-dark">フィットネスログ</a>
-          </div>
-          {% if user.is_authenticated %}
-          <div class="logout-button">
-            <a href="{% url 'app:user_logout' %}" class="btn btn-outline-light btn-sm">ログアウト</a>
-          </div>
-          {% endif %}
+
+    <div class="box-header">
+        {% if user.is_authenticated %}
+        <div class="logout-button">
+          <a href="{% url 'app:user_logout' %}" 
+   class="btn btn-sm d-flex align-items-center gap-1"
+   style="background:white; color:black;">
+  <i class="bi bi-box-arrow-right"></i>
+  ログアウト
+</a>
         </div>
+        {% endif %}
+      <div class="d-flex justify-content-between align-items-center position-relative">
+        <div class="fw-bold" style="font-size: 1.4rem;">
+          <a href="{% url 'app:home' %}" class="text-decoration-none text-dark">フィットネスログ</a>
+        </div>
+      </div>
 
-        <div class="d-flex justify-content-center gap-3 mt-2">
-          <a href="{% url 'app:objective' %}" class="nav-link">目標一覧</a>
-          <a href="{% url 'app:favorite' %}" class="nav-link">お気に入り</a>
-
+      <div class="d-flex justify-content-center gap-3 mt-2">
+        <a href="{% url 'app:goal_list' %}" class="nav-link">目標一覧</a>
+        <a href="{% url 'app:favorite' %}" class="nav-link">お気に入り</a>
 
         <div class="dropdown">
           <button class="btn nav-link dropdown-toggle p-0" type="button"
                   id="mypageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-          マイページ
+            マイページ
           </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="mypageDropdown">
-          <li>
-            <a class="dropdown-item" href="{% url 'app:mypage' %}?section=email">
-          メールアドレス変更
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="{% url 'app:mypage' %}?section=password">
-          パスワード変更
-            </a>
-          </li>
-        </ul>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="mypageDropdown">
+            <li><a class="dropdown-item" href="{% url 'app:mypage' %}?section=email">メールアドレス変更</a></li>
+            <li><a class="dropdown-item" href="{% url 'app:mypage' %}?section=password">パスワード変更</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-      {% endblock %}
 
-      <div class="p-4">
+    {% if messages %}
+      <div class="container mt-3">
+        {% for message in messages %}
+          <div class="alert alert-success text-center">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+     {% endif %}
+    
+    <div class="content-box">
+      <div class="content-inner">
         {% block content %}{% endblock %}
       </div>
     </div>
+
   </main>
 
   {% block extra_js %}{% endblock %}
