@@ -23,13 +23,12 @@
       </div>
     </nav>
 
-    <main>
+    <main style="margin-top: -180px;">
       <div class="container">
         <div class="card border-0 shadow-none text-center">
           <div class="p-4 bg-white text-dark">
             <h2 class="title">作品No.1 フィットネスログ</h2>
 
-            <!-- 3枚横並び -->
             <div class="row g-3 text-center mt-4">
 
               <div class="col-12 col-md-4">
@@ -57,15 +56,40 @@
       </div>
     </main>
 
-    <p class="lead mb-4 text-center">
-      フィットネスログは、健康維持に関心がある人のための<wbr>
-      運動履歴の記録、ToDo・スケジュール管理アプリです。<br>
-      このアプリを利用することで、<wbr>
-      日々の運動の目標・予定・履歴を視認することができ、<wbr>
-      運動を継続するサポートをします。
-    </p>
+<p class="lead mb-2 text-center mx-auto text-block">
+  フィットネスログは、<span class="sp-br"><br></span>
+  健康維持に関心がある人のための<span class="sp-br"><br></span>
+  運動履歴の記録、<span class="sp-br"><br></span>
+  ToDo・スケジュール管理アプリです。<span class="sp-br"><br></span>
+  このアプリを利用することで、<span class="sp-br"><br></span>
+  日々の運動の目標・予定・履歴を<span class="sp-br"><br></span>
+  視認することができ、<span class="sp-br"><br></span>
+  運動を継続するサポートをします。
+</p>
 
-    <div class="container text-center fs-5 py-5">
+<style>
+  .text-block {
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* PCでは完全に消す（DOMから消える扱い） */
+  .sp-br {
+    display: none !important;
+  }
+
+  /* スマホだけ改行を表示 */
+  @media (max-width: 768px) {
+    .text-block {
+      max-width: 90%;
+    }
+    .sp-br {
+      display: inline !important;
+    }
+  }
+</style>
+
+    <div class="container text-center fs-5">
       <a href="{% static 'pdf/企画書.pdf' %}" target="_blank">企画書</a>
       <a href="{% static 'pdf/画面設計図.pdf' %}" target="_blank"> 画面設計図</a>
       <a href="{% static 'svg/画面遷移図.drawio.svg' %}" target="_blank"> 画面遷移図</a>
