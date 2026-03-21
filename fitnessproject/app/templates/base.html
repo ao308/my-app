@@ -78,10 +78,8 @@
 <body class="bg-light">
   <main>
 
-    <!-- ▼▼ ヘッダー全体 ▼▼ -->
     <div class="box-header">
 
-      <!-- 上段：タイトル + ログアウト -->
       <div class="d-flex justify-content-between align-items-center">
 
         <div class="fw-bold" style="font-size: 1.4rem;">
@@ -103,7 +101,6 @@
 
       </div>
 
-      <!-- 下段：ナビゲーション -->
       <div class="d-flex justify-content-center gap-3 mt-2">
         <a href="{% url 'app:goal_list' %}" class="nav-link">目標一覧</a>
         <a href="{% url 'app:favorite' %}" class="nav-link">お気に入り</a>
@@ -121,8 +118,6 @@
       </div>
 
     </div>
-    <!-- ▲▲ ヘッダーここまで ▲▲ -->
-
 
     {% if messages %}
       <div class="container mt-3">

@@ -11,13 +11,11 @@
 
         <div class="d-flex gap-2">
 
-          <!-- 予定に追加 -->
           <a href="/exercise/new/?exercise={{ s.exercise }}"
              class="btn btn-sm btn-primary">
             予定作成
           </a>
 
-          <!-- 削除ボタン -->
           <button type="button"
                   class="btn btn-sm btn-outline-danger"
                   onclick="removeFavorite('{{ s.id }}', this)">
@@ -44,8 +42,6 @@
   </a>
 </div>
 
-
-<!-- ★★★ お気に入り追加モーダル ★★★ -->
 <div id="favoriteModal" class="modal-overlay" style="
   display:none;
   position: fixed;
@@ -77,8 +73,6 @@
   </div>
 </div>
 
-
-<!-- ★★★ JS ★★★ -->
 <script>
 function getCookie(name) {
   const cookies = document.cookie.split(';');
@@ -113,8 +107,6 @@ function removeFavorite(scheduleId, button) {
   });
 }
 
-
-// ★ モーダル開閉 ★
 document.getElementById("openFavoriteModal").onclick = () => {
   document.getElementById("favoriteModal").style.display = "flex";
 };

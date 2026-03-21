@@ -15,14 +15,12 @@
 <form id="record-form" method="post" style="padding: 0 1rem;">
   {% csrf_token %}
 
-  <!-- 運動の種類 -->
   <div class="mb-3">
     <label class="form-label">実施した運動</label>
     <input type="text" class="form-control" value="{{ schedule.exercise }}" disabled>
     {{ form.exercise.as_hidden }}
   </div>
 
-  <!-- お気に入り -->
   <div class="mb-3">
     <div class="form-check">
       <input type="checkbox"
@@ -34,34 +32,29 @@
     </div>
   </div>
 
-  <!-- メモ -->
   <div class="mb-3">
     <label class="form-label">メモ</label>
     {{ form.memo }}
   </div>
 
-  <!-- 日付 -->
   <div class="mb-3">
     <label class="form-label">日付</label>
     <input type="date" class="form-control" value="{{ schedule.date|date:'Y-m-d' }}" disabled>
   </div>
   {{ form.date.as_hidden }}
 
-  <!-- 開始時間 -->
   <div class="mb-3">
     <label class="form-label">開始時間</label>
     <input type="time" class="form-control" value="{{ schedule.start_time|time:'H:i' }}" disabled>
   </div>
   {{ form.start_time.as_hidden }}
 
-  <!-- 終了時間 -->
   <div class="mb-3">
     <label class="form-label">終了時間</label>
     <input type="time" class="form-control" value="{{ schedule.end_time|time:'H:i' }}" disabled>
   </div>
   {{ form.end_time.as_hidden }}
 
-  <!-- 頑張り度 -->
 <div class="mb-3">
   <label class="form-label">頑張り度*</label>
   <div id="rating-stars" style="font-size: 2rem; cursor: pointer;">
@@ -78,12 +71,10 @@
   {% endif %}
 </div>
 
-  <!-- 記録ボタン -->
   <div class="d-flex justify-content-center mt-4">
     <button type="submit" class="btn btn-success w-50">記録</button>
   </div>
 
-  <!-- キャンセル -->
   <div class="text-center mt-3">
     <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">キャンセル</a>
   </div>

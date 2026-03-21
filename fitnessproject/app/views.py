@@ -150,15 +150,12 @@ def home(request):
         for s in all_schedules
     ]
 
-    # ★ schedule=None の記録に対応した修正版
     for r in all_records:
         if r.schedule:
             title = r.schedule.exercise
             date = r.schedule.date.strftime("%Y-%m-%d")
         else:
-            # 新規記録（schedule=None）
             title = r.exercise
-            # 記録日時を使う（created_at が無ければ r.date を使う）
             date = r.created_at.strftime("%Y-%m-%d") if hasattr(r, "created_at") else ""
 
         events.append({
