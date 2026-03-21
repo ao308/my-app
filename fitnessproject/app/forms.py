@@ -111,17 +111,15 @@ TIME_CHOICES = [
 
 
 class ExerciseScheduleForm(forms.ModelForm):
-    # ★ 記録画面と同じ rows=2 のメモ欄
     memo = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 2})
     )
 
-    # ★ HTML5 required を避けるため Django 側でバリデーション
     exercise = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={"class": "form-control"}),
-        error_messages={"required": "運動の種類を入力してください"}
+        error_messages={"required": "運動名を入力してください"}
     )
 
     date = forms.DateField(
@@ -150,11 +148,10 @@ class ExerciseScheduleForm(forms.ModelForm):
             "show_on_home": "ホーム画面に表示する",
         }
 
-    # ★ Django 側で exercise の必須チェック
     def clean_exercise(self):
         exercise = self.cleaned_data.get("exercise")
         if not exercise:
-            raise ValidationError("運動の種類を入力してください")
+            raise ValidationError("運動名を入力してください")
         return exercise
 
     def clean(self):
