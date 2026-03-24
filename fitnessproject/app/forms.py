@@ -164,27 +164,43 @@ class ExerciseScheduleForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class ExerciseRecordForm(forms.ModelForm):
-    exercise = forms.CharField(required=False)
+    exercise = forms.CharField(
+        required=True,
+        error_messages={"required": "運動名を入力してください"},
+        widget=forms.TextInput(attrs={"class": "form-control"})
+    )
 
     class Meta:
         model = ExerciseRecord
         fields = ["exercise", "memo", "start_time", "end_time", "rating"]
         widgets = {
-            "exercise": forms.TextInput(attrs={"class": "form-control"}),
             "memo": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
             "start_time": forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
             "end_time": forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
             "rating": forms.HiddenInput(),
         }
 
+    def clean_exercise(self):
+        exercise = self.cleaned_data.get("exercise")
+        if not exercise:
+            raise ValidationError("運動名を入力してください")
+        return exercise
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get("start_time")
+        end = cleaned_data.get("end_time")
+
+        if start and end and end <= start:
+            self.add_error("end_time", "終了時間は開始時間より後にしてください")
+        return cleaned_data
+
     def clean_rating(self):
         rating = self.cleaned_data.get("rating")
         if rating in [None, 0]:
-            raise forms.ValidationError("頑張り度を選択してください")
+            raise ValidationError("頑張り度を選択してください")
         return rating
-
 
 class EmailChangeForm(forms.ModelForm):
     class Meta:
@@ -193,11 +209,6 @@ class EmailChangeForm(forms.ModelForm):
         widgets = {
             "email": forms.EmailInput(attrs={"class": "form-control"})
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["email"].initial = ""
-
 
 class CustomPasswordChangeForm(BasePasswordChangeForm):
     def __init__(self, *args, **kwargs):

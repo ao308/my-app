@@ -2,14 +2,19 @@
 {% load form_tags %}
 
 {% block content %}
-<form method="post">
+<form method="post" novalidate>
   {% csrf_token %}
 
+  <!-- 運動名 -->
   <div class="mb-3">
     <label class="form-label">運動名*</label>
     {{ form.exercise|add_class:"form-control" }}
+    {% if form.exercise.errors %}
+      <div class="text-danger small mt-1">{{ form.exercise.errors.0 }}</div>
+    {% endif %}
   </div>
 
+  <!-- お気に入り -->
   <div class="mb-3">
     <label class="form-label">お気に入りから選ぶ</label>
     <div class="d-flex flex-wrap gap-2">
@@ -22,21 +27,34 @@
     </div>
   </div>
 
+  <!-- メモ -->
   <div class="mb-3">
     <label class="form-label">メモ</label>
     {{ form.memo|add_class:"form-control" }}
+    {% if form.memo.errors %}
+      <div class="text-danger small mt-1">{{ form.memo.errors.0 }}</div>
+    {% endif %}
   </div>
 
+  <!-- 開始時間 -->
   <div class="mb-3">
     <label class="form-label">開始時間*</label>
     {{ form.start_time|add_class:"form-select" }}
+    {% if form.start_time.errors %}
+      <div class="text-danger small mt-1">{{ form.start_time.errors.0 }}</div>
+    {% endif %}
   </div>
 
+  <!-- 終了時間 -->
   <div class="mb-3">
     <label class="form-label">終了時間*</label>
     {{ form.end_time|add_class:"form-select" }}
+    {% if form.end_time.errors %}
+      <div class="text-danger small mt-1">{{ form.end_time.errors.0 }}</div>
+    {% endif %}
   </div>
 
+  <!-- 頑張り度 -->
   <div class="mb-3">
     <label class="form-label">頑張り度*</label>
     <div id="rating-stars" style="font-size: 2rem; cursor: pointer;">
@@ -48,6 +66,10 @@
     </div>
 
     <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
+
+    {% if form.rating.errors %}
+      <div class="text-danger small mt-1">{{ form.rating.errors.0 }}</div>
+    {% endif %}
   </div>
 
   <div class="d-flex justify-content-center gap-2 mt-4">
@@ -59,27 +81,11 @@
   </div>
 </form>
 
-<div class="modal fade" id="requiredModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">入力エラー</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p>以下の項目を入力してください：</p>
-        <ul id="required-list"></ul>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const form = document.querySelector("form");
   const ratingInput = document.getElementById("id_rating");
-
   const stars = document.querySelectorAll("#rating-stars span");
+
   stars.forEach(star => {
     star.addEventListener("click", function () {
       const value = this.dataset.value;
@@ -97,45 +103,6 @@ document.addEventListener("DOMContentLoaded", function () {
       s.textContent = Number(s.dataset.value) <= currentRating ? "★" : "☆";
     });
   }
-
-  form.addEventListener("submit", function (e) {
-    const missing = [];
-
-    const exerciseInput = document.querySelector("[name='exercise']");
-    if (!exerciseInput.value.trim()) {
-      missing.push("運動名");
-    }
-
-    const startInput = document.querySelector("[name='start_time']");
-    if (startInput.selectedIndex === 0) {
-      missing.push("開始時間");
-    }
-
-    const endInput = document.querySelector("[name='end_time']");
-    if (endInput.selectedIndex === 0) {
-      missing.push("終了時間");
-    }
-
-    if (!ratingInput.value || ratingInput.value === "0") {
-      missing.push("頑張り度");
-    }
-
-    if (missing.length > 0) {
-      e.preventDefault();
-
-      const list = document.getElementById("required-list");
-      list.innerHTML = "";
-      missing.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
-
-      bootstrap.Modal.getOrCreateInstance(
-        document.getElementById("requiredModal")
-      ).show();
-    }
-  });
 });
 </script>
 
