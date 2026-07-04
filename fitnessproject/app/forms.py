@@ -13,58 +13,99 @@ User = get_user_model()
 
 
 class RegistForm(forms.ModelForm):
+    username = forms.CharField(
+        required=False,
+        label='ユーザー名',
+        widget=forms.TextInput()
+    )
+    email = forms.EmailField(
+        required=False,
+        label='メールアドレス',
+        widget=forms.EmailInput()
+    )
+    password = forms.CharField(
+        required=False,
+        label='パスワード',
+        widget=forms.PasswordInput()
+    )
     password2 = forms.CharField(
+        required=False,
         label='パスワード再入力',
         widget=forms.PasswordInput()
     )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
-        widgets = {
-            'password': forms.PasswordInput(),
-        }
-        labels = {
-            'username': 'ユーザー名',
-            'email': 'メールアドレス',
-            'password': 'パスワード',
-        }
-
-    def clean_password(self):
-        password = self.cleaned_data.get("password")
-
-        if not re.search(r"[A-Za-z]", password):
-            raise ValidationError("パスワードには半角英字を含めてください。")
-
-        if not re.search(r"[0-9]", password):
-            raise ValidationError("パスワードには半角数字を含めてください。")
-
-        if len(password) < 8:
-            raise ValidationError("パスワードは8文字以上で入力してください。")
-
-        return password
+        fields = ['username', 'email'] 
 
     def clean(self):
         cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        email = cleaned_data.get('email')
         password = cleaned_data.get('password')
         password2 = cleaned_data.get('password2')
+
+        if not username:
+            self.add_error('username', 'ユーザー名を入力してください')
+
+        if not password2:
+            self.add_error('password2', '入力してください')
 
         if password and password2 and password != password2:
             self.add_error('password2', 'パスワードが一致しません')
 
         return cleaned_data
+    
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+
+        if not email:
+            self.add_error("email", "メールアドレスを入力してください")
+            return email
+
+        if User.objects.filter(email=email).exists():
+            self.add_error("email", "このメールアドレスは既に使用されています")
+            return email
+
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        if not password:
+            self.add_error("password", "パスワードを入力してください")
+            return ""
+
+        if not re.search(r"[A-Za-z]", password) or \
+            not re.search(r"[0-9]", password) or \
+            len(password) < 8:
+            self.add_error("password", "パスワードの条件を満たしていません")
+            return password or ""
+
+        return password
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password'])
+
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+
         if commit:
             user.save()
         return user
 
-
 class UserLoginForm(forms.Form):
-    email = forms.EmailField(label="メールアドレス")
-    password = forms.CharField(label="パスワード", widget=forms.PasswordInput())
+    email = forms.EmailField(
+        label="メールアドレス",
+        required=False,
+        widget=forms.EmailInput(attrs={"class": "form-control"})
+    )
+    password = forms.CharField(
+        label="パスワード",
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "form-control"})
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -74,31 +115,58 @@ class UserLoginForm(forms.Form):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise ValidationError('メールアドレスまたはパスワードが正しくありません')
+            self.add_error(None, 'メールアドレスまたはパスワードが正しくありません')
+            return cleaned_data
 
         if not user.check_password(password):
-            raise ValidationError('メールアドレスまたはパスワードが正しくありません')
+            self.add_error(None, 'メールアドレスまたはパスワードが正しくありません')
+            return cleaned_data
 
         self.user = user
         return cleaned_data
 
-
 class GoalForm(forms.ModelForm):
+    title = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3})
+    )
+
+    due_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control"
+            }
+        )
+    )
+
     class Meta:
         model = Goal
-        exclude = ['user']
-        fields = ['title', 'description', 'due_date', 'no_deadline', 'show_on_home']
+        fields = ["title", "description", "due_date", "no_deadline", "show_on_home"]
         widgets = {
-            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            "no_deadline": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "show_on_home": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
     def clean(self):
         cleaned_data = super().clean()
+        title = cleaned_data.get("title")
         due_date = cleaned_data.get("due_date")
         no_deadline = cleaned_data.get("no_deadline")
 
+        if not title:
+            self.add_error("title", "目標を入力してください")
+
         if (due_date and no_deadline) or (not due_date and not no_deadline):
-            self.add_error("due_date", "期限を入力するか、無期限にチェックを入れてください（両方は不可）")
+            raise forms.ValidationError(
+                "期限は日付を入力するか無期限にチェックを入れてください"
+            )
 
         return cleaned_data
 
@@ -108,7 +176,6 @@ TIME_CHOICES = [
     for hour in range(0, 25)
     for minute in (0, 30)
 ]
-
 
 class ExerciseScheduleForm(forms.ModelForm):
     memo = forms.CharField(
@@ -124,40 +191,45 @@ class ExerciseScheduleForm(forms.ModelForm):
 
     date = forms.DateField(
         label="日付",
+        required=False,
         widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
         error_messages={"required": "日付を選択してください"}
     )
+
     start_time = forms.TimeField(
         label="開始時間",
         widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
         error_messages={"required": "開始時間を選択してください"}
     )
+
     end_time = forms.TimeField(
         label="終了時間",
         widget=forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
         error_messages={"required": "終了時間を選択してください"}
     )
 
+    show_on_home = forms.BooleanField(
+        required=False,
+        label="ホーム画面に表示する",
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
+
     class Meta:
         model = ExerciseSchedule
         fields = ["exercise", "memo", "date", "start_time", "end_time", "show_on_home"]
-        widgets = {
-            "show_on_home": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-        labels = {
-            "show_on_home": "ホーム画面に表示する",
-        }
-
-    def clean_exercise(self):
-        exercise = self.cleaned_data.get("exercise")
-        if not exercise:
-            raise ValidationError("運動名を入力してください")
-        return exercise
 
     def clean(self):
         cleaned_data = super().clean()
+        exercise = cleaned_data.get("exercise")
+        date = cleaned_data.get("date")
         start = cleaned_data.get("start_time")
         end = cleaned_data.get("end_time")
+
+        if not exercise:
+            self.add_error("exercise", "運動名を入力してください")
+
+        if not date:
+            self.add_error("date", "日付を選択してください")
 
         if start and end and end <= start:
             self.add_error("end_time", "終了時間は開始時間より後にしてください")
@@ -165,15 +237,22 @@ class ExerciseScheduleForm(forms.ModelForm):
         return cleaned_data
 
 class ExerciseRecordForm(forms.ModelForm):
+    date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        input_formats=["%Y-%m-%d"],
+        error_messages={"required": "日付を選択してください"}
+    )
+
     exercise = forms.CharField(
-        required=True,
-        error_messages={"required": "運動名を入力してください"},
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        error_messages={"required": "運動名を入力してください"}
     )
 
     class Meta:
         model = ExerciseRecord
-        fields = ["exercise", "memo", "start_time", "end_time", "rating"]
+        fields = ["exercise", "memo", "date", "start_time", "end_time", "rating"]
         widgets = {
             "memo": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
             "start_time": forms.Select(choices=TIME_CHOICES, attrs={"class": "form-select"}),
@@ -181,37 +260,150 @@ class ExerciseRecordForm(forms.ModelForm):
             "rating": forms.HiddenInput(),
         }
 
-    def clean_exercise(self):
-        exercise = self.cleaned_data.get("exercise")
-        if not exercise:
-            raise ValidationError("運動名を入力してください")
-        return exercise
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "date" in self.initial:
+            self.fields["date"].widget.attrs["value"] = self.initial["date"]
+
     def clean(self):
         cleaned_data = super().clean()
+        exercise = cleaned_data.get("exercise")
+        date = cleaned_data.get("date")
         start = cleaned_data.get("start_time")
         end = cleaned_data.get("end_time")
+        rating = cleaned_data.get("rating")
+
+        if not exercise:
+            self.add_error("exercise", "運動名を入力してください")
+
+        if not date:
+            self.add_error("date", "日付を選択してください")
 
         if start and end and end <= start:
             self.add_error("end_time", "終了時間は開始時間より後にしてください")
+
+        if rating in [None, 0]:
+            self.add_error("rating", "頑張り度を選択してください")
+
+        return cleaned_data
+    
+class FavoriteForm(forms.ModelForm):
+    exercise = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        error_messages={"required": "入力してください"}
+    )
+
+    class Meta:
+        model = ExerciseSchedule
+        fields = ["exercise"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        exercise = cleaned_data.get("exercise")
+
+        if not exercise:
+            self.add_error("exercise", "入力してください")
+
         return cleaned_data
 
-    def clean_rating(self):
-        rating = self.cleaned_data.get("rating")
-        if rating in [None, 0]:
-            raise ValidationError("頑張り度を選択してください")
-        return rating
 
 class EmailChangeForm(forms.ModelForm):
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+        error_messages={"required": "メールアドレスを入力してください"}
+    )
+
     class Meta:
         model = User
         fields = ["email"]
-        widgets = {
-            "email": forms.EmailInput(attrs={"class": "form-control"})
-        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if not email:
+            raise forms.ValidationError("メールアドレスを入力してください")
+
+        if self.instance and email == self.instance.email:
+            raise forms.ValidationError("現在のメールアドレスと同じです")
+
+        return email
 
 class CustomPasswordChangeForm(BasePasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields["old_password"].required = False
+        self.fields["new_password1"].required = False
+        self.fields["new_password2"].required = False
+
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+            field.widget.attrs.pop("required", None)
+
+    def clean_old_password(self):
+        old = self.cleaned_data.get("old_password")
+
+        if not old:
+            raise ValidationError("現在のパスワードを入力してください")
+
+        if not self.user.check_password(old):
+            raise ValidationError("現在のパスワードが間違っています")
+
+        return old
+
+    def clean_new_password1(self):
+        new_password = self.cleaned_data.get("new_password1")
+
+        if not new_password:
+            raise ValidationError("新しいパスワードを入力してください")
+
+        if self.user.check_password(new_password):
+            raise ValidationError("現在のパスワードと同じです")
+
+        try:
+            validate_password(new_password, self.user)
+        except ValidationError:
+            raise ValidationError("パスワードの条件を満たしていません")
+
+        return new_password
+
+    def clean_new_password2(self):
+        new_password1 = self.cleaned_data.get("new_password1")
+        new_password2 = self.cleaned_data.get("new_password2")
+
+        if not new_password2:
+            raise ValidationError("入力してください")
+
+        if new_password1 and new_password2 and new_password1 != new_password2:
+            raise ValidationError("パスワードが一致しません")
+
+        try:
+            validate_password(new_password2, self.user)
+        except ValidationError:
+            pass
+
+        return new_password2
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if "new_password2" in self._errors:
+            errors = self._errors["new_password2"]
+
+            filtered = [
+                e for e in errors
+                if "一致しません" in str(e) or "入力してください" in str(e)
+            ]
+
+            if filtered:
+                self._errors["new_password2"] = filtered
+            else:
+                del self._errors["new_password2"]
+
+        return cleaned_data
+
+
+
+
+

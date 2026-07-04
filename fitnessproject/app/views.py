@@ -1,22 +1,24 @@
-from django.shortcuts import render, redirect
-from django.views.generic import (
-    TemplateView, CreateView, FormView, View
-)
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import TemplateView, CreateView, FormView, View
 from django.urls import reverse_lazy
-from django.contrib.auth import authenticate, login, logout
-from .forms import RegistForm, UserLoginForm
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Goal, ExerciseSchedule, ExerciseRecord
-from .forms import GoalForm, ExerciseScheduleForm, ExerciseRecordForm
-from datetime import time, datetime
 from django.http import JsonResponse
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from .forms import EmailChangeForm, CustomPasswordChangeForm
 from django.contrib import messages
+
+from django.contrib.auth.forms import PasswordChangeForm
+
+from .models import Goal, ExerciseSchedule, ExerciseRecord
+from .forms import (
+    RegistForm, UserLoginForm, GoalForm,
+    ExerciseScheduleForm, ExerciseRecordForm,
+    EmailChangeForm, CustomPasswordChangeForm,
+    FavoriteForm
+)
+
+from datetime import datetime, date, time
+
 
 class IndexView(TemplateView):
     template_name = 'app/index.html'
@@ -27,7 +29,7 @@ class HomeView(TemplateView):
 class RegistUserView(CreateView):
     template_name = 'app/regist.html'
     form_class = RegistForm
-    success_url = reverse_lazy('app:home')
+    success_url = reverse_lazy('app:user_login')
 
 class UserLoginView(FormView):
     template_name = 'app/user_login.html'
@@ -47,20 +49,6 @@ class UserLogoutView(View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return redirect('app:user_login')
-
-class FavoriteView(LoginRequiredMixin, TemplateView):
-    template_name = 'app/favorite.html'
-    login_url = 'app:user_login'
-
-    def get(self, request, *args, **kwargs):
-        favorites = ExerciseSchedule.objects.filter(
-            user=request.user,
-            is_favorite=True
-        ).order_by("-date")
-
-        return render(request, self.template_name, {
-            "favorites": favorites
-        })
 
 class MypageView(LoginRequiredMixin, TemplateView):
     template_name = 'app/mypage.html'
@@ -108,7 +96,12 @@ class MypageView(LoginRequiredMixin, TemplateView):
 
 @login_required
 def goal_list(request):
-    goals = Goal.objects.filter(user=request.user).order_by('is_completed', 'due_date')
+    goals = Goal.objects.filter(user=request.user).order_by(
+        'is_completed',
+        'no_deadline',
+        'due_date',
+        '-id'
+    )
     return render(request, 'app/goal.html', {'goals': goals})
 
 @login_required
@@ -136,7 +129,11 @@ def home(request):
         is_record=False
     ).order_by("date")
 
-    all_schedules = ExerciseSchedule.objects.filter(user=request.user)
+    all_schedules = ExerciseSchedule.objects.filter(
+        user=request.user,
+        is_record=False
+    )
+
     all_records = ExerciseRecord.objects.filter(user=request.user)
 
     events = [
@@ -151,20 +148,14 @@ def home(request):
     ]
 
     for r in all_records:
-        if r.schedule:
-            title = r.schedule.exercise
-            date = r.schedule.date.strftime("%Y-%m-%d")
-        else:
-            title = r.exercise
-            date = r.created_at.strftime("%Y-%m-%d") if hasattr(r, "created_at") else ""
-
         events.append({
             "type": "record",
             "id": r.pk,
-            "title": title,
-            "date": date,
+            "title": r.exercise,
+            "date": r.date.strftime("%Y-%m-%d") if r.date else "",
             "rating": r.rating,
             "is_record": True,
+            "schedule": r.schedule_id,
         })
 
     exercises = schedules.filter(show_on_home=True).order_by("date")[:2]
@@ -252,10 +243,16 @@ def exercise_new(request):
         "favorites": favorites,  
     })
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import ExerciseSchedule, ExerciseRecord
+from .forms import ExerciseRecordForm
+
+
 @login_required
 def exercise_record(request):
-    pk = request.GET.get("id")
-    schedule = get_object_or_404(ExerciseSchedule, pk=pk, user=request.user)
+    schedule_id = request.POST.get("schedule_id") or request.GET.get("id")
+    schedule = get_object_or_404(ExerciseSchedule, pk=schedule_id, user=request.user)
 
     if request.method == "POST":
         form = ExerciseRecordForm(request.POST)
@@ -263,21 +260,28 @@ def exercise_record(request):
             record = form.save(commit=False)
             record.user = request.user
             record.schedule = schedule
+            record.exercise = schedule.exercise
+            record.date = schedule.date
+            record.start_time = schedule.start_time
+            record.end_time = schedule.end_time
             record.save()
-
             schedule.is_record = True
             schedule.show_on_home = False
             schedule.save()
 
             return redirect("app:home")
-        else:
-            return render(request, "app/exercise_record.html", {
-                "form": form,
-                "schedule": schedule,
-            })
 
-    else:
-        form = ExerciseRecordForm()
+        return render(request, "app/exercise_record.html", {
+            "form": form,
+            "schedule": schedule,
+        })
+
+    form = ExerciseRecordForm(initial={
+        "exercise": schedule.exercise,
+        "date": schedule.date,
+        "start_time": schedule.start_time,
+        "end_time": schedule.end_time,
+    })
 
     return render(request, "app/exercise_record.html", {
         "form": form,
@@ -286,6 +290,8 @@ def exercise_record(request):
 
 @login_required
 def exercise_record_new(request):
+    selected_date = request.GET.get("date")
+
     if request.method == "POST":
         form = ExerciseRecordForm(request.POST)
         if form.is_valid():
@@ -294,8 +300,16 @@ def exercise_record_new(request):
             record.schedule = None
             record.save()
             return redirect("app:home")
+
     else:
-        form = ExerciseRecordForm()
+        if selected_date:
+            initial_date = selected_date
+        else:
+            initial_date = date.today().strftime("%Y-%m-%d")
+
+        form = ExerciseRecordForm(initial={
+            "date": initial_date
+        })
 
     favorites = ExerciseSchedule.objects.filter(
         user=request.user,
@@ -354,22 +368,39 @@ def record_delete(request, pk):
     return JsonResponse({"success": False, "error": "Invalid method"})
 
 @login_required
-def exercise_record_edit(request):
-    pk = request.GET.get("id")
+def exercise_record_edit(request, pk):
     record = get_object_or_404(ExerciseRecord, pk=pk, user=request.user)
-    schedule = record.schedule
 
     if request.method == "POST":
         form = ExerciseRecordForm(request.POST, instance=record)
         if form.is_valid():
             form.save()
             return redirect("app:home")
-    else:
-        form = ExerciseRecordForm(instance=record)
 
-    return render(request, "app/exercise_record.html", {
+        return render(request, "app/exercise_record_edit.html", {
+            "form": form,
+            "record": record,
+        })
+
+    form = ExerciseRecordForm(instance=record)
+
+    return render(request, "app/exercise_record_edit.html", {
         "form": form,
-        "schedule": schedule,
+        "record": record,
+    })
+
+@login_required
+def favorite(request):
+    favorites = ExerciseSchedule.objects.filter(
+        user=request.user,
+        is_favorite=True
+    ).order_by("-date")
+
+    form = FavoriteForm()
+
+    return render(request, "app/favorite.html", {
+        "favorites": favorites,
+        "form": form,
     })
 
 @login_required
@@ -397,20 +428,36 @@ def toggle_favorite(request, pk):
 @login_required
 def favorite_add(request):
     if request.method == "POST":
-        name = request.POST.get("exercise")
+        form = FavoriteForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["exercise"]
 
-        ExerciseSchedule.objects.filter(
+            ExerciseSchedule.objects.filter(
+                user=request.user,
+                exercise=name,
+                is_favorite=True
+            ).update(is_favorite=False)
+
+            ExerciseSchedule.objects.create(
+                user=request.user,
+                exercise=name,
+                date=None,
+                is_favorite=True,
+                is_record=False,
+            )
+
+            return redirect("app:favorite")
+
+        favorites = ExerciseSchedule.objects.filter(
             user=request.user,
-            exercise=name,
             is_favorite=True
-        ).update(is_favorite=False)
+        ).order_by("-date")
 
-        ExerciseSchedule.objects.create(
-            user=request.user,
-            exercise=name,
-            date=None,
-            is_favorite=True,
-            is_record=False,
-        )
+        return render(request, "app/favorite.html", {
+            "favorites": favorites,
+            "form": form,
+            "open_modal": True, 
+        })
 
-        return redirect("app:favorite")
+    return redirect("app:favorite")
+

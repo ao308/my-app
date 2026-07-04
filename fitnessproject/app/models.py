@@ -51,7 +51,7 @@ class Goal(models.Model):
     description = models.TextField("詳細", blank=True)
     due_date = models.DateField("期限", null=True, blank=True)
     no_deadline = models.BooleanField("無期限", default=False)
-    show_on_home = models.BooleanField("ホームに表示", default=False)
+    show_on_home = models.BooleanField("ホーム画面に表示する", default=False)
     is_completed = models.BooleanField(default=False) 
     
     def __str__(self):
@@ -81,6 +81,8 @@ class ExerciseRecord(models.Model):
     exercise = models.CharField(max_length=100, default="")
     memo = models.TextField(blank=True)
     rating = models.IntegerField(null=False, blank=False)
+
+    date = models.DateField(null=True, blank=True)
 
     start_time = models.TimeField(blank=True, null=True)
     end_time = models.TimeField(blank=True, null=True)

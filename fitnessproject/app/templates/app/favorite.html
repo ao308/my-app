@@ -17,7 +17,7 @@
           </a>
 
           <button type="button"
-                  class="btn btn-sm btn-outline-danger"
+                  class="btn btn-sm btn-danger"
                   onclick="removeFavorite('{{ s.id }}', this)">
             削除
           </button>
@@ -42,6 +42,7 @@
   </a>
 </div>
 
+<!-- モーダル -->
 <div id="favoriteModal" class="modal-overlay" style="
   display:none;
   position: fixed;
@@ -56,14 +57,22 @@
 
     <form method="POST" action="{% url 'app:favorite_add' %}">
       {% csrf_token %}
-      <input type="text" name="exercise" class="form-control mb-3"
-             placeholder="運動名を入力" required>
 
-  <div class="text-center mt-4">
-  <button type="submit" class="btn btn-primary px-4">
-    追加
-  </button>
-</div>
+      {{ form.exercise }}
+
+      {% if form.exercise.errors %}
+        <div class="text-danger small mt-2">
+          {% for error in form.exercise.errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary px-4">
+          追加
+        </button>
+      </div>
     </form>
 
     <button type="button" class="btn btn-link w-100 mt-3 text-muted"
@@ -115,5 +124,11 @@ document.getElementById("closeFavoriteModal").onclick = () => {
   document.getElementById("favoriteModal").style.display = "none";
 };
 </script>
+
+{% if open_modal %}
+<script>
+  document.getElementById("favoriteModal").style.display = "flex";
+</script>
+{% endif %}
 
 {% endblock %}

@@ -12,13 +12,19 @@
   }
 </style>
 
-<form id="record-form" method="post" style="padding: 0 1rem;">
+<form id="record-form" method="post" novalidate style="padding: 0 1rem;">
   {% csrf_token %}
 
+  <!-- ★ 必須の hidden（これが無いと記録の日付が保存されない） -->
+  <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
+  <input type="hidden" name="exercise" value="{{ schedule.exercise }}">
+  <input type="hidden" name="date" value="{{ schedule.date|date:'Y-m-d' }}">
+  <input type="hidden" name="start_time" value="{{ schedule.start_time|time:'H:i' }}">
+  <input type="hidden" name="end_time" value="{{ schedule.end_time|time:'H:i' }}">
+
   <div class="mb-3">
-    <label class="form-label">実施した運動</label>
+    <label class="form-label">運動名</label>
     <input type="text" class="form-control" value="{{ schedule.exercise }}" disabled>
-    {{ form.exercise.as_hidden }}
   </div>
 
   <div class="mb-3">
@@ -35,44 +41,50 @@
   <div class="mb-3">
     <label class="form-label">メモ</label>
     {{ form.memo }}
+    {% if form.memo.errors %}
+      <div class="text-danger small mt-1">{{ form.memo.errors.0 }}</div>
+    {% endif %}
   </div>
 
   <div class="mb-3">
     <label class="form-label">日付</label>
     <input type="date" class="form-control" value="{{ schedule.date|date:'Y-m-d' }}" disabled>
   </div>
-  {{ form.date.as_hidden }}
 
   <div class="mb-3">
     <label class="form-label">開始時間</label>
     <input type="time" class="form-control" value="{{ schedule.start_time|time:'H:i' }}" disabled>
   </div>
-  {{ form.start_time.as_hidden }}
 
   <div class="mb-3">
     <label class="form-label">終了時間</label>
     <input type="time" class="form-control" value="{{ schedule.end_time|time:'H:i' }}" disabled>
   </div>
-  {{ form.end_time.as_hidden }}
 
-<div class="mb-3">
-  <label class="form-label">頑張り度*</label>
-  <div id="rating-stars" style="font-size: 2rem; cursor: pointer;">
-    <span data-value="1">☆</span>
-    <span data-value="2">☆</span>
-    <span data-value="3">☆</span>
-    <span data-value="4">☆</span>
-    <span data-value="5">☆</span>
+  <div class="mb-3">
+    <label class="form-label">頑張り度*</label>
+    <div id="rating-stars" style="font-size: 2rem; cursor: pointer;">
+      <span data-value="1">☆</span>
+      <span data-value="2">☆</span>
+      <span data-value="3">☆</span>
+      <span data-value="4">☆</span>
+      <span data-value="5">☆</span>
+    </div>
+    <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
+
+    {% if form.rating.errors %}
+      <div class="text-danger small mt-1">{{ form.rating.errors.0 }}</div>
+    {% endif %}
   </div>
-  <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
 
-  {% if form.rating.errors %}
-    <div class="text-danger small mt-1">{{ form.rating.errors.0 }}</div>
+  {% if form.non_field_errors %}
+    <div class="text-danger small mb-2">
+      {{ form.non_field_errors }}
+    </div>
   {% endif %}
-</div>
 
   <div class="d-flex justify-content-center mt-4">
-    <button type="submit" class="btn btn-success w-50">記録</button>
+    <button type="submit" class="btn btn-success">記録</button>
   </div>
 
   <div class="text-center mt-3">

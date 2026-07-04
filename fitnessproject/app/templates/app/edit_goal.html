@@ -15,8 +15,9 @@
   {{ form.description|add_class:"form-control" }}
 </div>
 
+
 <div class="mb-3">
-  <label>期限</label>
+  <label>期限*（日付か無期限のどちらかを選択）</label>
   {{ form.due_date|add_class:"form-control" }}
   
   {% if form.due_date.errors %}
@@ -43,7 +44,7 @@
 </div>
 
  <div class="d-flex justify-content-center gap-2 mt-4">
-  <button type="submit" class="btn btn-success">完了</button>
+  <button type="submit" class="btn btn-primary">更新</button>
   </div>
 
   <div class="text-center mt-3">

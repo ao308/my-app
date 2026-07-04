@@ -8,6 +8,14 @@ function getCookie(name) {
   return null;
 }
 
+function isSameDate(d1, d2) {
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const calendarEl = document.getElementById('calendar');
   if (!calendarEl) return;
@@ -31,12 +39,13 @@ document.addEventListener('DOMContentLoaded', function () {
     },
 
     dayCellDidMount: function(info) {
-      const cellDateStr = info.date.toLocaleDateString("sv-SE");
       const events = window.exerciseEvents || [];
 
-      const todaysEvents = events.filter(ev => ev.date === cellDateStr);
+      const todaysEvents = events.filter(ev => {
+        const evDate = new Date(ev.date);
+        return isSameDate(evDate, info.date);
+      });
 
-  // ★ イベントがない日は dot を付けない
       if (todaysEvents.length === 0) return;
 
       const hasRecord = todaysEvents.some(ev => ev.type === "record");
@@ -81,6 +90,7 @@ function formatJapaneseDate(dateStr) {
 
 function showPlans() {
   const date = window.selectedDate;
+  const d = new Date(date);
 
   document.getElementById("plan-date").textContent = formatJapaneseDate(date);
 
@@ -89,15 +99,20 @@ function showPlans() {
 
   const events = window.exerciseEvents || [];
 
-  const schedules = events.filter(ev => ev.type === "schedule" && ev.date === date);
-  const records = events.filter(ev => ev.type === "record" && ev.date === date);
+  const schedules = events.filter(ev => {
+    const evDate = new Date(ev.date);
+    return ev.type === "schedule" && isSameDate(evDate, d);
+  });
 
-  // ★ 記録済みの予定を除外
+  const records = events.filter(ev => {
+    const evDate = new Date(ev.date);
+    return ev.type === "record" && isSameDate(evDate, d);
+  });
+
   const unrecordedSchedules = schedules.filter(s =>
-    !records.some(r => r.title === s.title && r.date === s.date)
+    !records.some(r => r.id === s.id)
   );
 
-  // ★ 予定セクション（未記録のみ）
   if (unrecordedSchedules.length > 0) {
     const header = document.createElement("div");
     header.className = "fw-bold mt-2 mb-1";
@@ -147,7 +162,6 @@ function showPlans() {
     });
   }
 
-  // ★ 記録セクション（背景色つき）
   if (records.length > 0) {
     const header = document.createElement("div");
     header.className = "fw-bold mt-3 mb-1";
@@ -165,7 +179,7 @@ function showPlans() {
       const editBtn = document.createElement("button");
       editBtn.className = "btn btn-sm btn-secondary";
       editBtn.textContent = "編集";
-      editBtn.onclick = () => window.location.href = `/exercise/record/edit/?id=${ev.id}`;
+      editBtn.onclick = () => window.location.href = `/exercise/record/${ev.id}/edit/`;
 
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "btn btn-sm btn-danger";
@@ -191,7 +205,6 @@ function showPlans() {
     });
   }
 
-  // 予定も記録もない場合
   if (schedules.length === 0 && records.length === 0) {
     const li = document.createElement("li");
     li.className = "list-group-item";
