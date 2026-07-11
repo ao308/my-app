@@ -1,3 +1,7 @@
+/* ============================
+   全体レイアウト（共通）
+============================ */
+
 * {
   margin: 0;
   padding: 0;
@@ -11,71 +15,7 @@ body {
 
 main {
   min-height: 100vh;
-  padding-top: 70px;
-}
-
-.navbar-nav {
-  flex-direction: row !important;
-}
-
-.nav-color {
-  color: black;
-}
-
-.nav-color:hover {
-  color: #ee6c4d;
-}
-
-.nav-color:after {
-  content: "";
-  display: block;
-  height: 2px;
-  background: #ee6c4d;
-  margin-top: 6px;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: all 0.3s ease-in-out;
-}
-
-.nav-color:hover:after {
-  transform: translateY(0px);
-  opacity: 1;
-}
-
-.top {
-  position: relative;
-  text-align: center;
-}
-
-.top img {
-  object-fit: cover;
-  height: 500px;
-}
-
-.goal-font {
-  font-family: 'Noto Sans JP', '游ゴシック', 'メイリオ', sans-serif;
-  font-weight: 600;
-  font-size: 1.3rem;
-}
-
-.exercise-font {
-  font-family: 'M PLUS 1p', 'メイリオ', sans-serif;
-  font-weight: 500;
-}
-
-.today-item {
-  background-color: #f8d7da !important;
-}
-
-.today-item span {
-  color: black !important;
-}
-
-.img-fluid {
-  width: 100%;
-  height: auto;
-  margin-bottom: 1rem;
-  display: block;
+  padding-top: 100px;
 }
 
 .container {
@@ -93,6 +33,10 @@ main {
   box-shadow: none;
 }
 
+.content-inner {
+  padding: 1.6rem 1rem;
+}
+
 .box-header {
   position: fixed;
   top: 0;
@@ -103,51 +47,133 @@ main {
   padding: 0.7rem 1.2rem;
 }
 
-.content-inner {
-  padding: 1.6rem 1rem;
+
+/* ============================
+   FullCalendar 共通スタイル
+============================ */
+
+/* カレンダー本体 */
+#calendar {
+  width: 100% !important;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 0.5rem;
+  margin-top: 1rem !important;
+  margin-bottom: 1.2rem !important;
+  overflow: hidden;
 }
 
-h4.title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 0.6rem;
-  }
+.fc-daygrid-day-frame {
+  min-height: 48px !important;
+  height: 48px !important;
+}
+
+/* 曜日ヘッダーの文字サイズ */
+.fc-col-header-cell .fc-col-header-cell-cushion {
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none !important;
+}
+
+/* 日付の文字サイズ */
+.fc-daygrid-day-number {
+  font-size: 1.05rem !important;
+  font-weight: bold;
+  padding: 2px;
+  text-decoration: none !important;
+}
+
+/* 今日の背景 */
+.fc-day-today {
+  background-color: #ffecb3 !important;
+  border: 2px solid #ffe082 !important;
+}
+
+/* イベント非表示（点だけ表示） */
+.fc-event {
+  display: none !important;
+}
+
+/* 曜日の色 */
+.fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion { color: red !important; }
+.fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion { color: blue !important; }
+.fc-col-header-cell.fc-day-mon .fc-col-header-cell-cushion,
+.fc-col-header-cell.fc-day-tue .fc-col-header-cell-cushion,
+.fc-col-header-cell.fc-day-wed .fc-col-header-cell-cushion,
+.fc-col-header-cell.fc-day-thu .fc-col-header-cell-cushion,
+.fc-col-header-cell.fc-day-fri .fc-col-header-cell-cushion { color: black !important; }
+
+/* 日付の色 */
+.fc .fc-day-sun .fc-daygrid-day-number { color: red !important; }
+.fc .fc-day-sat .fc-daygrid-day-number { color: blue !important; }
+.fc .fc-day-mon .fc-daygrid-day-number,
+.fc .fc-day-tue .fc-daygrid-day-number,
+.fc .fc-day-wed .fc-daygrid-day-number,
+.fc .fc-day-thu .fc-daygrid-day-number,
+.fc .fc-day-fri .fc-daygrid-day-number { color: black !important; }
+
+/* 余白を詰める */
+.fc .fc-toolbar {
+  margin-bottom: 0.4rem !important;
+}
+
+.fc .fc-daygrid {
+  margin-top: 0 !important;
+}
+
+.fc .fc-scrollgrid {
+  padding: 4px !important;
+}
 
 
-/* スマホ調整 */
 @media screen and (max-width: 576px) {
 
-  .container {
-    padding: 1rem 0.8rem 1.5rem;
+  /* カレンダーの上下余白を自然に */
+  #calendar {
+    margin-top: 0.6rem !important;
+    margin-bottom: 0.6rem !important;
   }
 
-  p.lead {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-bottom: 1.2rem;
-    padding: 0 0.5rem;
+  /* ツールバーの余白を少しだけ詰める（詰めすぎない） */
+  .fc .fc-toolbar {
+    margin-bottom: 0.3rem !important;
   }
 
-    .content-box {
-    margin: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+  .fc .fc-daygrid {
+    margin-top: 0.3rem !important;
   }
 
-  .box-header {
-    padding: 0.5rem 1rem !important;
+  /* 日付セルの高さを少しだけ小さく（PCより少しだけコンパクト） */
+  .fc-daygrid-day-frame {
+    min-height: 46px !important;
+    height: 46px !important;
   }
 
-  main {
-    padding-top: 48px !important; /* ← スマホはさらに詰める */
+  .fc-daygrid-day-number {
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
   }
 
-  .content-inner {
-    padding-top: 0.8rem !important; /* ← 上だけ詰める */
+  /* スクロールグリッドの padding は 0 ではなく “少し残す” */
+  .fc .fc-scrollgrid {
+    padding: 2px !important;
   }
 
-    #calendar {
-    width: 100% !important;
-    padding: 0 0.5rem;
+  .fc .fc-toolbar-title {
+    font-size: 1.0rem !important;
+    font-weight: 800 !important;
   }
+
+  /* 矢印ボタン（prev/next）のアイコンを小さく */
+  .fc .fc-button .fc-icon {
+    font-size: 0.8rem !important;
+  }
+}
+
+ul.list-group > li.list-group-item.today-item {
+  background-color: #f8d7da !important;
+}
+
+ul.list-group > li.list-group-item.today-item span {
+  color: black !important;
 }
