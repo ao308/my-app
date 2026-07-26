@@ -15,7 +15,6 @@
 <form id="record-form" method="post" novalidate style="padding: 0 1rem;">
   {% csrf_token %}
 
-  <!-- ★ 必須の hidden（これが無いと記録の日付が保存されない） -->
   <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
   <input type="hidden" name="exercise" value="{{ schedule.exercise }}">
   <input type="hidden" name="date" value="{{ schedule.date|date:'Y-m-d' }}">
