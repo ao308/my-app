@@ -117,4 +117,39 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+<script>
+function getCookie(name) {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [key, value] = cookie.trim().split('=');
+    if (key === name) return decodeURIComponent(value);
+  }
+  return null;
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const favCheck = document.getElementById("favoriteCheck");
+  if (!favCheck) return;
+
+  favCheck.addEventListener("change", function () {
+    const scheduleId = this.dataset.id;
+
+    fetch(`/exercise/favorite/toggle/${scheduleId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("お気に入り更新:", data);
+    })
+    .catch(err => console.error("お気に入りエラー:", err));
+  });
+});
+</script>
+
 {% endblock %}
