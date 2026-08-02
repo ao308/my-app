@@ -109,8 +109,9 @@ function showPlans() {
     return ev.type === "record" && isSameDate(evDate, d);
   });
 
+  // ⭐ 修正ポイント：記録の schedule と予定の id を比較する
   const unrecordedSchedules = schedules.filter(s =>
-    !records.some(r => r.id === s.id)
+    !records.some(r => r.schedule === s.id)
   );
 
   if (unrecordedSchedules.length > 0) {
@@ -182,6 +183,7 @@ function showPlans() {
       editBtn.onclick = () => window.location.href = `/exercise/record/${ev.id}/edit/`;
 
       const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
       deleteBtn.className = "btn btn-sm btn-danger";
       deleteBtn.textContent = "削除";
       deleteBtn.onclick = () => deleteRecord(ev.id);

@@ -354,11 +354,13 @@ def record_delete(request, pk):
             record = ExerciseRecord.objects.get(pk=pk, user=request.user)
             schedule = record.schedule
 
-            record.delete() 
+            record.delete()
 
-            schedule.is_record = False
-            schedule.show_on_home = True  
-            schedule.save()
+            # ★ 記録のみの場合は schedule が None
+            if schedule is not None:
+                schedule.is_record = False
+                schedule.show_on_home = True
+                schedule.save()
 
             return JsonResponse({"success": True})
 
