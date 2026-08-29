@@ -2,104 +2,100 @@
 
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=999">
-    <title>Portfolio</title>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <body class="bg-white text-dark">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white">
-      <div class="container">
-      </div>
-    </nav>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <main style="margin-top: -180px;">
-      <div class="container">
-        <div class="card border-0 shadow-none text-center">
-          <div class="p-4 bg-white text-dark">
-            <h2 class="title">作品No.1 フィットネスログ</h2>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=999">
 
-            <div class="row g-3 text-center mt-4">
+  <title>Portfolio</title>
 
-              <div class="col-12 col-md-4">
-                <img src="{% static 'img/calendar.jpeg' %}?v=1"
-                     alt="ホーム画面"
-                     class="img-fluid" />
-              </div>
+  <style>
+    main {
+      margin-top: -120px;
+    }
 
-              <div class="col-12 col-md-4">
-                <img src="{% static 'img/schedule.jpeg' %}?v=1"
-                     alt="予定作成"
-                     class="img-fluid sub-img" />
-              </div>
+    .text-block {
+      max-width: 560px;
+      line-height: 1.7;
+    }
 
-              <div class="col-12 col-md-4">
-                <img src="{% static 'img/record.jpeg' %}?v=1"
-                     alt="運動記録"
-                     class="img-fluid sub-img" />
-              </div>
+    @media (max-width: 768px) {
+      .text-block {
+        max-width: 90%;
+      }
+    }
 
+    .portfolio-img {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+
+<body class="bg-white text-dark">
+
+  <main>
+    <div class="container">
+      <div class="card border-0 shadow-none text-center">
+        <div class="p-4 bg-white text-dark">
+
+          <h2 class="title">作品No.1 フィットネスログ</h2>
+
+          <div class="row g-3 text-center mt-4">
+
+            <div class="col-12 col-md-4">
+              <img src="{% static 'img/calendar.jpeg' %}?v=1"
+                   alt="ホーム画面"
+                   class="portfolio-img" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <img src="{% static 'img/schedule.jpeg' %}?v=1"
+                   alt="予定作成"
+                   class="portfolio-img" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <img src="{% static 'img/record.jpeg' %}?v=1"
+                   alt="運動記録"
+                   class="portfolio-img" />
             </div>
 
           </div>
+
         </div>
       </div>
-    </main>
+    </div>
+  </main>
 
-<p class="lead mb-2 text-center mx-auto text-block">
-  フィットネスログは、<br>
-  健康維持に関心がある人のための<br>
-  運動履歴の記録、<br>
-  ToDo・スケジュール管理アプリです。<br>
-  このアプリを利用することで、<br>
-  日々の運動の目標・予定・履歴を<br>
-  視認することができ、<br>
-  運動を継続するサポートをします。
-</p>
+  <p class="lead mb-2 text-center mx-auto text-block">
+    フィットネスログは、健康維持に関心がある人のための<br>
+    運動履歴の記録、ToDo・スケジュール管理アプリです。<br>
+    このアプリを利用することで、日々の運動の目標・予定・履歴を<br>
+    視認することができ、運動を継続するサポートをします。
+  </p>
 
-<style>
-  .text-block {
-    max-width: 560px;
-    line-height: 1.7;
-  }
+  <div class="container text-center fs-5">
 
-  .sp-br {
-    display: none !important;
-  }
+    <a href="{% static 'pdf/企画書.pdf' %}" target="_blank">企画書</a>
+    <a href="{% static 'pdf/画面設計図.pdf' %}" target="_blank">画面設計図</a>
+    <a href="{% static 'svg/画面遷移図.drawio.svg' %}" target="_blank">画面遷移図</a>
+    <a href="{% static 'svg/ER図.drawio.svg' %}" target="_blank">ER図</a>
 
-  @media (max-width: 768px) {
-    .text-block {
-      max-width: 90%;
-    }
-    .sp-br {
-      display: inline !important;
-    }
-  }
-</style>
-
-    <div class="container text-center fs-5">
-      <a href="{% static 'pdf/企画書.pdf' %}" target="_blank">企画書</a>
-      <a href="{% static 'pdf/画面設計図.pdf' %}" target="_blank"> 画面設計図</a>
-      <a href="{% static 'svg/画面遷移図.drawio.svg' %}" target="_blank"> 画面遷移図</a>
-      <a href="{% static 'svg/ER図.drawio.svg' %}" target="_blank"> ER図</a>
-
-      <div class="mt-4">
-        <a href="{% url 'app:user_login' %}?next=/home" class="btn btn-warning w-30 text-white">
-          フィットネスログアプリへ
-        </a>
-      </div>
+    <div class="mt-4">
+      <a href="{% url 'app:user_login' %}?next=/home"
+         class="btn btn-warning text-white px-4">
+        フィットネスログアプリへ
+      </a>
     </div>
 
-    {% block extra_js %} {% endblock %}
-  </body>
+  </div>
+
+</body>
 </html>

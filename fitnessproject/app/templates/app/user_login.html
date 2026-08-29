@@ -26,34 +26,35 @@
   {% csrf_token %}
  
  <div class="mb-3">
- <label for="username" class="form-label">メールアドレス</label>
- <input type="text" class="form-control" id="email" name="email">
-{% if form.email.errors %}
-    <div class="text-danger small">
-      {% for error in form.email.errors %}
-        {{ error }}
-      {% endfor %}
-    </div>
-  {% endif %}
+   <label for="email" class="form-label">メールアドレス</label>
+   <input type="text" class="form-control" id="email" name="email"
+          value="{{ form.email.value|default_if_none:'' }}">
+   {% if form.email.errors %}
+      <div class="text-danger small">
+        {% for error in form.email.errors %}
+          {{ error }}
+        {% endfor %}
+      </div>
+   {% endif %}
  </div>
 
  <div class="mb-3">
- <label for="password" class="form-label">パスワード</label>
- <input type="password" class="form-control" id="password" name="password">
- {% if form.password.errors %}
-    <div class="text-danger small">
-      {% for error in form.password.errors %}
-        {{ error }}
-      {% endfor %}
-    </div>
-  {% endif %}
+   <label for="password" class="form-label">パスワード</label>
+   <input type="password" class="form-control" id="password" name="password">
+   {% if form.password.errors %}
+      <div class="text-danger small">
+        {% for error in form.password.errors %}
+          {{ error }}
+        {% endfor %}
+      </div>
+   {% endif %}
  </div>
 
- <button type="submit" class="btn btn-primary mx-auto d-block mt-4 w-50 w-sm-20">ログイン</button>
+ <button type="submit" class="btn btn-primary mx-auto d-block mt-4 w-50">ログイン</button>
  </form>
 
  <p class="mt-4 text-center">
- <a href="{% url 'app:regist' %}" class="text-decoration-underline">アカウント登録</a>
+   <a href="{% url 'app:regist' %}" class="text-decoration-underline">アカウント登録</a>
  </p>
 
  </div>

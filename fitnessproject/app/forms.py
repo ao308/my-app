@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
-from .models import Goal, ExerciseSchedule, ExerciseRecord
+from .models import Goal, ExerciseSchedule, ExerciseRecord, Favorite
 from datetime import time
 from django.contrib.auth.forms import PasswordChangeForm as BasePasswordChangeForm
 import re
@@ -36,7 +36,7 @@ class RegistForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email'] 
+        fields = ['username', 'email']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -45,54 +45,54 @@ class RegistForm(forms.ModelForm):
         password = cleaned_data.get('password')
         password2 = cleaned_data.get('password2')
 
+        # 必須チェック（全部ここで）
         if not username:
             self.add_error('username', 'ユーザー名を入力してください')
+
+        if not email:
+            self.add_error('email', 'メールアドレスを入力してください')
+
+        if not password:
+            self.add_error('password', 'パスワードを入力してください')
 
         if not password2:
             self.add_error('password2', '入力してください')
 
+        # パスワード一致チェック
         if password and password2 and password != password2:
             self.add_error('password2', 'パスワードが一致しません')
 
         return cleaned_data
-    
+
     def clean_email(self):
         email = self.cleaned_data.get("email")
 
-        if not email:
-            self.add_error("email", "メールアドレスを入力してください")
-            return email
-
-        if User.objects.filter(email=email).exists():
+        if email and User.objects.filter(email=email).exists():
             self.add_error("email", "このメールアドレスは既に使用されています")
-            return email
 
         return email
 
     def clean_password(self):
         password = self.cleaned_data.get("password")
 
-        if not password:
-            self.add_error("password", "パスワードを入力してください")
-            return ""
-
-        if not re.search(r"[A-Za-z]", password) or \
-            not re.search(r"[0-9]", password) or \
-            len(password) < 8:
-            self.add_error("password", "パスワードの条件を満たしていません")
-            return password or ""
+        if password:
+            if not re.search(r"[A-Za-z]", password) or \
+               not re.search(r"[0-9]", password) or \
+               len(password) < 8:
+                self.add_error("password", "パスワードの条件を満たしていません")
 
         return password
 
     def save(self, commit=True):
         user = super().save(commit=False)
-
         password = self.cleaned_data.get('password')
+
         if password:
             user.set_password(password)
 
         if commit:
             user.save()
+
         return user
 
 class UserLoginForm(forms.Form):
@@ -218,6 +218,12 @@ class ExerciseScheduleForm(forms.ModelForm):
         model = ExerciseSchedule
         fields = ["exercise", "memo", "date", "start_time", "end_time", "show_on_home"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["exercise"].widget.attrs["id"] = "id_exercise"
+        self.fields["memo"].widget.attrs["id"] = "id_memo"
+
     def clean(self):
         cleaned_data = super().clean()
         exercise = cleaned_data.get("exercise")
@@ -282,31 +288,26 @@ class ExerciseRecordForm(forms.ModelForm):
         if start and end and end <= start:
             self.add_error("end_time", "終了時間は開始時間より後にしてください")
 
-        if rating in [None, 0]:
+        if rating is None or rating == 0:
             self.add_error("rating", "頑張り度を選択してください")
 
         return cleaned_data
     
 class FavoriteForm(forms.ModelForm):
     exercise = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-        error_messages={"required": "入力してください"}
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "運動名を入力",
+            }
+        ),
+        error_messages={"required": "運動名を入力してください"},
     )
 
     class Meta:
-        model = ExerciseSchedule
+        model = Favorite
         fields = ["exercise"]
-
-    def clean(self):
-        cleaned_data = super().clean()
-        exercise = cleaned_data.get("exercise")
-
-        if not exercise:
-            self.add_error("exercise", "入力してください")
-
-        return cleaned_data
-
 
 class EmailChangeForm(forms.ModelForm):
     email = forms.EmailField(

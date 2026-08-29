@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initialView: 'dayGridMonth',
     locale: 'ja',
     contentHeight: 'auto',
-
     showNonCurrentDates: true,
     fixedWeekCount: false,
 
@@ -34,13 +33,10 @@ document.addEventListener('DOMContentLoaded', function () {
       right: 'next'
     },
 
-    dayCellContent: function(arg) {
-      return arg.date.getDate();
-    },
+    dayCellContent: arg => arg.date.getDate(),
 
     dayCellDidMount: function(info) {
       const events = window.exerciseEvents || [];
-
       const todaysEvents = events.filter(ev => {
         const evDate = new Date(ev.date);
         return isSameDate(evDate, info.date);
@@ -73,13 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
   calendar.render();
 });
 
-function goTo(action, id, date) {
-  const url = action === "new"
-    ? `/exercise/new/?date=${date}`
-    : `/exercise/record/?id=${id}`;
-  window.location.href = url;
-}
-
 function formatJapaneseDate(dateStr) {
   const d = new Date(dateStr);
   const month = d.getMonth() + 1;
@@ -109,7 +98,6 @@ function showPlans() {
     return ev.type === "record" && isSameDate(evDate, d);
   });
 
-  // ⭐ 修正ポイント：記録の schedule と予定の id を比較する
   const unrecordedSchedules = schedules.filter(s =>
     !records.some(r => r.schedule === s.id)
   );
@@ -131,17 +119,20 @@ function showPlans() {
       const editBtn = document.createElement("button");
       editBtn.className = "btn btn-sm btn-secondary";
       editBtn.textContent = "編集";
-      editBtn.onclick = () => window.location.href = `/exercise/edit/${ev.id}/`;
+      editBtn.onclick = () => window.location.href = `/fitnessproject/exercise/edit/${ev.id}/`;
 
       const recordBtn = document.createElement("button");
       recordBtn.className = "btn btn-sm btn-primary";
       recordBtn.textContent = "記録";
-      recordBtn.onclick = () => window.location.href = `/exercise/record/?id=${ev.id}`;
+      recordBtn.onclick = () => window.location.href = `/fitnessproject/exercise/record/?id=${ev.id}`;
 
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "btn btn-sm btn-danger";
       deleteBtn.textContent = "削除";
-      deleteBtn.onclick = () => deletePlan(ev.id);
+
+      deleteBtn.setAttribute("data-bs-toggle", "modal");
+      deleteBtn.setAttribute("data-bs-target", "#deleteModal");
+      deleteBtn.setAttribute("data-delete-url", `/fitnessproject/exercise/delete/${ev.id}/`);
 
       const btnGroup = document.createElement("div");
       btnGroup.className = "d-flex align-items-center";
@@ -180,13 +171,15 @@ function showPlans() {
       const editBtn = document.createElement("button");
       editBtn.className = "btn btn-sm btn-secondary";
       editBtn.textContent = "編集";
-      editBtn.onclick = () => window.location.href = `/exercise/record/${ev.id}/edit/`;
+      editBtn.onclick = () => window.location.href = `/fitnessproject/exercise/record/${ev.id}/edit/`;
 
       const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
       deleteBtn.className = "btn btn-sm btn-danger";
       deleteBtn.textContent = "削除";
-      deleteBtn.onclick = () => deleteRecord(ev.id);
+
+      deleteBtn.setAttribute("data-bs-toggle", "modal");
+      deleteBtn.setAttribute("data-bs-target", "#deleteModal");
+      deleteBtn.setAttribute("data-delete-url", `/fitnessproject/exercise/record/delete/${ev.id}/`);
 
       const btnGroup = document.createElement("div");
       btnGroup.className = "d-flex align-items-center";
@@ -215,69 +208,28 @@ function showPlans() {
   }
 
   document.getElementById("new-plan-btn").onclick = () => {
-    window.location.href = `/exercise/new/?date=${date}`;
+    window.location.href = `/fitnessproject/exercise/new/?date=${window.selectedDate}`;
   };
 
   document.getElementById("new-record-btn").onclick = () => {
-    window.location.href = `/exercise/record/new/?date=${date}`;
+    window.location.href = `/fitnessproject/exercise/record/new/?date=${window.selectedDate}`;
   };
 
   bootstrap.Modal.getOrCreateInstance(document.getElementById("plan-list-modal")).show();
 }
 
-function deletePlan(id) {
-  if (!confirm("本当に削除しますか？")) return;
+/* ⭐ 削除処理 */
+document.addEventListener("DOMContentLoaded", function () {
+  const deleteModal = document.getElementById("deleteModal");
+  const deleteForm = document.getElementById("deleteForm");
 
-  fetch(`/exercise/delete/${id}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCookie("csrftoken")
-    }
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      const modalEl = document.getElementById("plan-list-modal");
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
+  if (!deleteModal || !deleteForm) return;
 
-      document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-      document.body.classList.remove('modal-open');
+  deleteModal.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    if (!button) return;
 
-      window.location.href = "/home";
-    } else {
-      alert("削除に失敗しました");
-    }
-  })
-  .catch(error => console.error("削除エラー:", error));
-}
-
-function deleteRecord(id) {
-  if (!confirm("本当に削除しますか？")) return;
-
-  fetch(`/exercise/record/delete/${id}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCookie("csrftoken"),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({})
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-
-      const modalEl = document.getElementById("plan-list-modal");
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-      document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-      document.body.classList.remove('modal-open');
-
-      window.location.href = "/home";
-
-    } else {
-      alert("削除に失敗しました");
-    }
-  })
-  .catch(error => console.error("削除エラー:", error));
-}
+    const url = button.getAttribute("data-delete-url");
+    deleteForm.action = url;
+  });
+});

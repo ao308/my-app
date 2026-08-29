@@ -31,15 +31,15 @@
       <input type="checkbox"
         class="form-check-input"
         id="favoriteCheck"
-        data-id="{{ schedule.id }}"
-        {% if schedule.is_favorite %}checked{% endif %}>
-      <label class="form-check-label" for="favoriteCheck">お気に入り追加</label>
+        data-exercise="{{ schedule.exercise }}"
+        {% if is_favorite %}checked{% endif %}>
+      <label class="form-check-label" for="favoriteCheck">お気に入りに追加</label>
     </div>
   </div>
 
   <div class="mb-3">
     <label class="form-label">メモ</label>
-    {{ form.memo }}
+    {{ form.memo|add_class:"form-control" }}
     {% if form.memo.errors %}
       <div class="text-danger small mt-1">{{ form.memo.errors.0 }}</div>
     {% endif %}
@@ -69,7 +69,8 @@
       <span data-value="4">☆</span>
       <span data-value="5">☆</span>
     </div>
-    <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
+
+    <input type="hidden" name="rating" id="id_rating" value="">
 
     {% if form.rating.errors %}
       <div class="text-danger small mt-1">{{ form.rating.errors.0 }}</div>
@@ -134,9 +135,9 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!favCheck) return;
 
   favCheck.addEventListener("change", function () {
-    const scheduleId = this.dataset.id;
+    const exerciseName = this.dataset.exercise;
 
-    fetch(`/exercise/favorite/toggle/${scheduleId}/`, {
+    fetch(`/fitnessproject/exercise/favorite/toggle/{{ schedule.id }}/`, {
       method: "POST",
       headers: {
         "X-CSRFToken": getCookie("csrftoken"),

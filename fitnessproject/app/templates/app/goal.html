@@ -37,12 +37,12 @@
 
       <a href="{% url 'app:edit_goal' goal.id %}" class="btn btn-sm btn-secondary">編集</a>
 
-      <form method="post" action="{% url 'app:delete_goal' goal.id %}"
-            onsubmit="return confirm('本当に削除しますか？');">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-sm btn-danger">削除</button>
-      </form>
-
+      <button class="btn btn-sm btn-danger"
+        data-bs-toggle="modal"
+        data-bs-target="#deleteModal"
+        data-delete-url="{% url 'app:delete_goal' goal.id %}">
+        削除
+      </button>
     </div>
 
   </div>

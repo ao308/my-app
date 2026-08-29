@@ -10,18 +10,17 @@
         <span>{{ s.exercise }}</span>
 
         <div class="d-flex gap-2">
-
-          <a href="/exercise/new/?exercise={{ s.exercise }}"
-             class="btn btn-sm btn-primary">
+          <a href="/fitnessproject/exercise/new/?exercise={{ s.exercise }}" class="btn btn-sm btn-primary">
             予定作成
           </a>
 
           <button type="button"
                   class="btn btn-sm btn-danger"
-                  onclick="removeFavorite('{{ s.id }}', this)">
+                  data-bs-toggle="modal"
+                  data-bs-target="#favoriteDeleteModal"
+                  data-delete-url="{% url 'app:favorite_delete' s.id %}">
             削除
           </button>
-
         </div>
       </li>
     {% endfor %}
@@ -31,7 +30,9 @@
 {% endif %}
 
 <div class="text-center mt-4">
-  <button class="btn btn-primary px-4" id="openFavoriteModal">
+  <button class="btn btn-primary px-4"
+          data-bs-toggle="modal"
+          data-bs-target="#favoriteAddModal">
     お気に入り追加
   </button>
 </div>
@@ -42,92 +43,84 @@
   </a>
 </div>
 
-<!-- モーダル -->
-<div id="favoriteModal" class="modal-overlay" style="
-  display:none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-">
-  <div class="modal-box bg-white p-4 rounded" style="width: 90%; max-width: 400px;">
-    <h5 class="mb-3">お気に入りを追加</h5>
+<!-- 追加モーダル -->
+<div class="modal fade" id="favoriteAddModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
 
-    <form method="POST" action="{% url 'app:favorite_add' %}">
-      {% csrf_token %}
-
-      {{ form.exercise }}
-
-      {% if form.exercise.errors %}
-        <div class="text-danger small mt-2">
-          {% for error in form.exercise.errors %}
-            <div>{{ error }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <div class="text-center mt-4">
-        <button type="submit" class="btn btn-primary px-4">
-          追加
-        </button>
+      <div class="modal-header">
+        <h5 class="modal-title">お気に入り追加</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-    </form>
 
-    <button type="button" class="btn btn-link w-100 mt-3 text-muted"
-            id="closeFavoriteModal">
-      閉じる
-    </button>
+      <div class="modal-body">
+        <form method="POST" action="{% url 'app:favorite_add' %}">
+          {% csrf_token %}
+
+          {{ form.exercise }}
+          {% if form.exercise.errors %}
+            <div class="text-danger small mt-2">
+              {% for error in form.exercise.errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary px-4">
+              追加
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 削除モーダル -->
+<div class="modal fade" id="favoriteDeleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-body text-center py-4">
+        お気に入りから削除しますか？
+      </div>
+
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          キャンセル
+        </button>
+
+        <form id="favoriteDeleteForm" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">削除</button>
+        </form>
+      </div>
+
+    </div>
   </div>
 </div>
 
 <script>
-function getCookie(name) {
-  const cookies = document.cookie.split(';');
-  for (let cookie of cookies) {
-    const [key, value] = cookie.trim().split('=');
-    if (key === name) return decodeURIComponent(value);
-  }
-  return null;
-}
+document.addEventListener("DOMContentLoaded", function () {
+  const favDeleteModal = document.getElementById("favoriteDeleteModal");
+  const favDeleteForm = document.getElementById("favoriteDeleteForm");
 
-function removeFavorite(scheduleId, button) {
-  if (!confirm("お気に入りから削除しますか？")) return;
-
-  fetch(`/exercise/favorite/toggle/${scheduleId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCookie("csrftoken"),
-      "X-Requested-With": "XMLHttpRequest"
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success && !data.is_favorite) {
-      const item = button.closest(".list-group-item");
-      if (item) item.remove();
-    } else {
-      alert("削除に失敗しました");
-    }
-  })
-  .catch(err => {
-    console.error("削除エラー:", err);
+  favDeleteModal.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    const url = button.getAttribute("data-delete-url");
+    favDeleteForm.action = url;
   });
-}
-
-document.getElementById("openFavoriteModal").onclick = () => {
-  document.getElementById("favoriteModal").style.display = "flex";
-};
-
-document.getElementById("closeFavoriteModal").onclick = () => {
-  document.getElementById("favoriteModal").style.display = "none";
-};
+});
 </script>
 
 {% if open_modal %}
 <script>
-  document.getElementById("favoriteModal").style.display = "flex";
+document.addEventListener("DOMContentLoaded", function () {
+  const addModal = new bootstrap.Modal(document.getElementById('favoriteAddModal'));
+  addModal.show();
+});
 </script>
 {% endif %}
 

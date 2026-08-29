@@ -5,63 +5,70 @@
 <form method="post">
   {% csrf_token %}
 
+  <!-- 運動名 -->
   <div class="mb-3">
     <label class="form-label">運動名*</label>
     {{ form.exercise|add_class:"form-control" }}
-    {% if form.exercise.errors %}
-      <div class="text-danger small mt-1">{{ form.exercise.errors.0 }}</div>
-    {% endif %}
   </div>
 
+  <!-- お気に入りから選ぶ -->
   <div class="mb-3">
-  <label class="form-label">お気に入りから選ぶ</label>
-  <div class="d-flex flex-wrap gap-2">
+    <label class="form-label">お気に入りから選ぶ</label>
 
-    {% if favorites %}
-      {% for name in favorites %}
-        <button type="button" class="btn btn-outline-secondary btn-sm"
-                onclick="document.getElementById('id_exercise').value = '{{ name }}'">
-          {{ name }}
-        </button>
-      {% endfor %}
-    {% else %}
-  <p class="text-muted small">
-    お気に入りがまだありません<br>
-    ヘッダーの「お気に入り」から登録できます
-  </p>
-{% endif %}
+    <div class="d-flex flex-wrap gap-2">
+      {% if favorites %}
+        {% for fav in favorites %}
+          <button type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  onclick="
+                    document.getElementById('id_exercise').value = '{{ fav.exercise }}';
+                    document.getElementById('id_memo').value = '{{ fav.memo_template|escapejs }}';
+                  ">
+            {{ fav.exercise }}
+          </button>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small">
+          お気に入りがまだありません<br>
+          ヘッダーの「お気に入り」から登録できます
+        </p>
+      {% endif %}
+    </div>
   </div>
-</div>
 
+  <!-- メモ -->
   <div class="mb-3">
     <label class="form-label">メモ</label>
     {{ form.memo|add_class:"form-control" }}
   </div>
 
+  <script>
+    // メモ欄に id を付ける（確実に動く）
+    document.addEventListener("DOMContentLoaded", () => {
+      const memoField = document.querySelector("textarea[name='memo']");
+      if (memoField) memoField.id = "id_memo";
+    });
+  </script>
+
+  <!-- 日付 -->
   <div class="mb-3">
     <label class="form-label">日付*</label>
     {{ form.date|add_class:"form-control" }}
-    {% if form.date.errors %}
-      <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
-    {% endif %}
   </div>
 
+  <!-- 開始時間 -->
   <div class="mb-3">
     <label class="form-label">開始時間*</label>
     {{ form.start_time|add_class:"form-select" }}
-    {% if form.start_time.errors %}
-      <div class="text-danger small mt-1">{{ form.start_time.errors.0 }}</div>
-    {% endif %}
   </div>
 
+  <!-- 終了時間 -->
   <div class="mb-3">
     <label class="form-label">終了時間*</label>
     {{ form.end_time|add_class:"form-select" }}
-    {% if form.end_time.errors %}
-      <div class="text-danger small mt-1">{{ form.end_time.errors.0 }}</div>
-    {% endif %}
   </div>
 
+  <!-- ホーム表示 -->
   <div class="mb-3 form-check">
     {{ form.show_on_home|add_class:"form-check-input" }}
     <label for="{{ form.show_on_home.id_for_label }}" class="form-check-label">
@@ -69,6 +76,7 @@
     </label>
   </div>
 
+  <!-- 登録ボタン -->
   <div class="d-flex justify-content-center gap-2 mt-4">
     <button type="submit" class="btn btn-primary">登録</button>
   </div>
@@ -76,5 +84,6 @@
   <div class="text-center mt-3">
     <a href="{% url 'app:home' %}" class="text-decoration-underline text-muted">キャンセル</a>
   </div>
+
 </form>
 {% endblock %}

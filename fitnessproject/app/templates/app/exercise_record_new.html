@@ -2,6 +2,7 @@
 {% load form_tags %}
 
 {% block content %}
+
 <form method="post" novalidate>
   {% csrf_token %}
 
@@ -12,26 +13,6 @@
       <div class="text-danger small mt-1">{{ form.exercise.errors.0 }}</div>
     {% endif %}
   </div>
-
-  <div class="mb-3">
-  <label class="form-label">お気に入りから選ぶ</label>
-
-  {% if favorites %}
-    <div class="d-flex flex-wrap gap-2">
-      {% for name in favorites %}
-        <button type="button" class="btn btn-outline-secondary btn-sm"
-                onclick="document.getElementById('id_exercise').value = '{{ name }}'">
-          {{ name }}
-        </button>
-      {% endfor %}
-    </div>
-  {% else %}
-  <p class="text-muted small mt-1">
-    お気に入りがまだありません<br>
-    ヘッダーの「お気に入り」から登録できます
-  </p>
-{% endif %}
-</div>
 
   <div class="mb-3">
     <label class="form-label">メモ</label>
@@ -81,7 +62,7 @@
       <span data-value="5">☆</span>
     </div>
 
-    <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:0 }}">
+    <input type="hidden" name="rating" id="id_rating" value="">
 
     {% if form.rating.errors %}
       <div class="text-danger small mt-1">{{ form.rating.errors.0 }}</div>
@@ -114,7 +95,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   const currentRating = Number(ratingInput.value);
-  if (currentRating > 0) {
+
+  if (!isNaN(currentRating) && currentRating > 0) {
     stars.forEach(s => {
       s.textContent = Number(s.dataset.value) <= currentRating ? "★" : "☆";
     });
